@@ -1,0 +1,23 @@
+# Node
+node_modules/
+.next/
+out/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Env
+.env
+.env.local
+
+# Tooling
+.DS_Store
+.idea/
+.vscode/
+.pytest_cache/
+.mypy_cache/
+coverage/
