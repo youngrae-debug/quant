@@ -1,0 +1,16 @@
+# Quant production cron schedule (UTC)
+# 04:00 symbols + filings/fundamentals ingest seed
+0 4 * * * cd /workspace/quant && ./infra/scripts/cron_symbol_sync.sh >> var/log/jobs/symbol_sync.log 2>&1
+10 4 * * * cd /workspace/quant && ./infra/scripts/cron_filing_sync.sh >> var/log/jobs/filing_sync.log 2>&1
+
+# 04:30 prices sync
+30 4 * * * cd /workspace/quant && ./infra/scripts/cron_price_sync.sh >> var/log/jobs/price_sync.log 2>&1
+
+# 05:00 materializer
+0 5 * * * cd /workspace/quant && ./infra/scripts/cron_materializer.sh >> var/log/jobs/materializer.log 2>&1
+
+# 05:30 quant engine
+30 5 * * * cd /workspace/quant && ./infra/scripts/cron_scoring.sh >> var/log/jobs/scoring.log 2>&1
+
+# 06:00 recommendation refresh
+0 6 * * * cd /workspace/quant && ./infra/scripts/cron_recommendation_refresh.sh >> var/log/jobs/recommendation_refresh.log 2>&1

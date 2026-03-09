@@ -5,7 +5,7 @@ from datetime import date
 
 from .finnhub import sync_daily_prices
 from .materializer import materialize_daily_fundamentals
-from .sec import sync_sec_symbols
+from .sec import sync_sec_filings, sync_sec_symbols
 
 
 def main() -> None:
@@ -16,6 +16,9 @@ def main() -> None:
     sec_parser.add_argument('--no-sic-enrichment', action='store_true')
     sec_parser.add_argument('--sic-limit', type=int, default=200)
 
+    filings_parser = sub.add_parser('sync-filings')
+    filings_parser.add_argument('--max-symbols', type=int, default=100)
+
     sub.add_parser('sync-prices')
 
     materializer_parser = sub.add_parser('materialize-fundamentals')
@@ -25,6 +28,8 @@ def main() -> None:
 
     if args.job == 'sync-sec-symbols':
         sync_sec_symbols(enrich_sic=not args.no_sic_enrichment, sic_enrichment_limit=args.sic_limit)
+    elif args.job == 'sync-filings':
+        sync_sec_filings(max_symbols=args.max_symbols)
     elif args.job == 'sync-prices':
         sync_daily_prices()
     elif args.job == 'materialize-fundamentals':

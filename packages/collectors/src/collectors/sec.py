@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
@@ -123,3 +124,78 @@ def _enrich_sic_from_submissions(client: httpx.Client, limit: int = 200) -> None
                     conn.execute(update_sql, {'sic': sic, 'id': symbol['id']})
             except Exception as exc:  # noqa: BLE001
                 logger.exception('Failed SIC enrichment cik=%s: %s', cik, exc)
+
+
+def sync_sec_filings(max_symbols: int = 100) -> int:
+    """Idempotent filing/companyfacts sync into filing_facts via upsert."""
+    headers = {'User-Agent': settings.sec_user_agent}
+    client = httpx.Client(timeout=settings.request_timeout_seconds, headers=headers)
+
+    symbols_sql = text(
+        """
+        SELECT id, ticker, cik
+        FROM symbols
+        WHERE is_active = true AND cik IS NOT NULL
+        ORDER BY id
+        LIMIT :max_symbols
+        """
+    )
+    upsert_sql = text(
+        """
+        INSERT INTO filing_facts (
+            symbol_id, filing_date, period_end_date, revenue_ttm, net_income_ttm, eps_ttm, source, raw_payload, created_at
+        ) VALUES (
+            :symbol_id, :filing_date, :period_end_date, :revenue_ttm, :net_income_ttm, :eps_ttm, 'sec-companyfacts', :raw_payload::jsonb, now()
+        )
+        ON CONFLICT (symbol_id, filing_date, period_end_date)
+        DO UPDATE SET
+            revenue_ttm = COALESCE(EXCLUDED.revenue_ttm, filing_facts.revenue_ttm),
+            net_income_ttm = COALESCE(EXCLUDED.net_income_ttm, filing_facts.net_income_ttm),
+            eps_ttm = COALESCE(EXCLUDED.eps_ttm, filing_facts.eps_ttm),
+            raw_payload = EXCLUDED.raw_payload,
+            source = EXCLUDED.source
+        """
+    )
+
+    inserted = 0
+    with engine.begin() as conn:
+        symbols = conn.execute(symbols_sql, {'max_symbols': max_symbols}).mappings().all()
+        for symbol in symbols:
+            cik = symbol['cik']
+            url = f"{settings.sec_base_url}/api/xbrl/companyfacts/CIK{cik}.json"
+            try:
+                payload = _fetch_json(client, url)
+                us_gaap = payload.get('facts', {}).get('us-gaap', {})
+                revenues = us_gaap.get('Revenues', {}).get('units', {}).get('USD', [])
+                income = us_gaap.get('NetIncomeLoss', {}).get('units', {}).get('USD', [])
+                eps = us_gaap.get('EarningsPerShareDiluted', {}).get('units', {}).get('USD/shares', [])
+
+                rev_latest = revenues[-1] if revenues else None
+                ni_latest = income[-1] if income else None
+                eps_latest = eps[-1] if eps else None
+
+                filing = rev_latest or ni_latest or eps_latest
+                if not filing:
+                    continue
+
+                filing_date = datetime.strptime(filing.get('filed'), '%Y-%m-%d').date()
+                period_end = datetime.strptime(filing.get('end'), '%Y-%m-%d').date()
+
+                conn.execute(
+                    upsert_sql,
+                    {
+                        'symbol_id': symbol['id'],
+                        'filing_date': filing_date,
+                        'period_end_date': period_end,
+                        'revenue_ttm': rev_latest.get('val') if rev_latest else None,
+                        'net_income_ttm': ni_latest.get('val') if ni_latest else None,
+                        'eps_ttm': eps_latest.get('val') if eps_latest else None,
+                        'raw_payload': str({'fetched_at': datetime.now(UTC).isoformat(), 'ticker': symbol['ticker'], 'cik': cik}).replace("'", '"'),
+                    },
+                )
+                inserted += 1
+            except Exception as exc:  # noqa: BLE001
+                logger.exception('Failed filing sync ticker=%s cik=%s: %s', symbol['ticker'], cik, exc)
+
+    logger.info('SEC filing sync complete: %s upserts', inserted)
+    return inserted

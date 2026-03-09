@@ -36,6 +36,7 @@ class Symbol(Base):
     fundamentals: Mapped[list['FundamentalsSnapshotDaily']] = relationship(back_populates='symbol')
     factor_scores: Mapped[list['FactorScoreDaily']] = relationship(back_populates='symbol')
     recommendations: Mapped[list['Recommendation']] = relationship(back_populates='symbol')
+    filing_facts: Mapped[list['FilingFact']] = relationship(back_populates='symbol')
 
 
 class PriceDaily(Base):
@@ -58,6 +59,31 @@ class PriceDaily(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     symbol: Mapped['Symbol'] = relationship(back_populates='prices')
+
+
+class FilingFact(Base):
+    __tablename__ = 'filing_facts'
+    __table_args__ = (
+        UniqueConstraint('symbol_id', 'filing_date', 'period_end_date', name='uq_filing_facts_symbol_filing_period'),
+        Index('ix_filing_facts_symbol_filing_date', 'symbol_id', 'filing_date'),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    symbol_id: Mapped[int] = mapped_column(ForeignKey('symbols.id', ondelete='CASCADE'), nullable=False)
+    filing_date: Mapped[date] = mapped_column(Date, nullable=False)
+    period_end_date: Mapped[date] = mapped_column(Date, nullable=False)
+    market_cap: Mapped[Decimal | None] = mapped_column(Numeric(20, 2))
+    pe_ratio: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))
+    pb_ratio: Mapped[Decimal | None] = mapped_column(Numeric(12, 4))
+    eps_ttm: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
+    revenue_ttm: Mapped[Decimal | None] = mapped_column(Numeric(20, 2))
+    net_income_ttm: Mapped[Decimal | None] = mapped_column(Numeric(20, 2))
+    ebitda_ttm: Mapped[Decimal | None] = mapped_column(Numeric(20, 2))
+    source: Mapped[str | None] = mapped_column(String(64))
+    raw_payload: Mapped[dict | None] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    symbol: Mapped['Symbol'] = relationship(back_populates='filing_facts')
 
 
 class FundamentalsSnapshotDaily(Base):
@@ -107,6 +133,7 @@ class FactorScoreDaily(Base):
 class Recommendation(Base):
     __tablename__ = 'recommendations'
     __table_args__ = (
+        UniqueConstraint('symbol_id', 'recommendation_date', name='uq_recommendations_symbol_date'),
         Index('ix_recommendations_symbol_date', 'symbol_id', 'recommendation_date'),
         Index('ix_recommendations_date_action', 'recommendation_date', 'action'),
     )

@@ -1,60 +1,22 @@
-'use client';
+import Link from 'next/link';
+import { getHealth } from '@/lib/api';
 
-import { useEffect, useMemo, useState } from 'react';
-
-type HealthResponse = {
-  status: string;
-};
-
-export default function HomePage() {
-  const apiBaseUrl = useMemo(
-    () => process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000',
-    []
-  );
-
-  const [health, setHealth] = useState<HealthResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-
-    async function fetchHealth() {
-      try {
-        const response = await fetch(`${apiBaseUrl}/health`, { cache: 'no-store' });
-
-        if (!response.ok) {
-          throw new Error(`API returned ${response.status}`);
-        }
-
-        const data = (await response.json()) as HealthResponse;
-        if (active) {
-          setHealth(data);
-          setError(null);
-        }
-      } catch (fetchError) {
-        if (active) {
-          setError(fetchError instanceof Error ? fetchError.message : 'Unknown error');
-        }
-      }
-    }
-
-    fetchHealth();
-
-    return () => {
-      active = false;
-    };
-  }, [apiBaseUrl]);
+export default async function HomePage() {
+  const health = await getHealth();
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl items-center px-6 py-16">
-      <section className="space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight">Quant Research Platform</h1>
-        <p className="text-slate-300">API base URL: {apiBaseUrl}</p>
-        <div className="rounded-lg border border-slate-700 bg-slate-900/70 p-4 text-sm">
-          {health && <p>API health status: {health.status}</p>}
-          {!health && !error && <p>Checking API health…</p>}
-          {error && <p className="text-red-300">API health check failed: {error}</p>}
+    <main className="mx-auto max-w-6xl px-6 py-16">
+      <section className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950 p-10">
+        <p className="text-xs uppercase tracking-[0.25em] text-emerald-300">Systematic Equity Research</p>
+        <h1 className="mt-4 text-5xl font-semibold tracking-tight">Institutional-grade insights, built for trust.</h1>
+        <p className="mt-4 max-w-3xl text-slate-300">
+          Quant combines point-in-time fundamentals, technical momentum, and expectation signals into transparent rankings and recommendations.
+        </p>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link href="/top-picks" className="rounded-lg bg-emerald-400 px-5 py-2 text-sm font-medium text-slate-900">Explore Top Picks</Link>
+          <Link href="/about-methodology" className="rounded-lg border border-slate-700 px-5 py-2 text-sm font-medium text-slate-200">Read Methodology</Link>
         </div>
+        <p className="mt-8 text-sm text-slate-400">API health: <span className="font-medium text-slate-200">{health?.status ?? 'unavailable'}</span></p>
       </section>
     </main>
   );

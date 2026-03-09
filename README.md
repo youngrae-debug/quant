@@ -1,18 +1,17 @@
-# Quant Monorepo (Scaffold - Phase 1)
+# Quant Monorepo (Scaffold - Phase 1+)
 
 Production-oriented monorepo scaffold for an investment research platform.
 
-## Included in this phase
+## Included
 
-- `apps/web`: Next.js 15 + TypeScript + Tailwind skeleton.
-- `apps/api`: FastAPI + SQLAlchemy + Alembic skeleton.
-- `packages/quant-engine`: Python package scaffold for factor scoring.
-- `packages/collectors`: Python package scaffold for SEC and Finnhub collectors.
-- `packages/db`: Placeholder for schema assets.
+- `apps/web`: Next.js 15 + TypeScript + Tailwind frontend.
+- `apps/api`: FastAPI + SQLAlchemy + Alembic backend.
+- `packages/quant-engine`: shared scoring engine package.
+- `packages/collectors`: SEC/Finnhub collectors and materializer jobs.
+- `packages/db`: placeholder for database assets.
 - PostgreSQL + API + Web services via Docker Compose.
-- Healthchecks for `db`, `api`, and `web` services in Docker Compose.
-- `.env.example` files for root and packages/apps.
-- `Makefile` bootstrap and container workflow helpers.
+- Healthchecks for `db`, `api`, and `web` services.
+- Cron-ready batch scripts with structured JSON logs and idempotent execution.
 
 ## Repository layout
 
@@ -53,16 +52,38 @@ quant/
    - API health: http://localhost:8000/health
    - Postgres: localhost:5432
 
-4. Verify homepage integration:
-
-   - Open Web homepage and confirm it displays `API health status: ok`.
-
-5. Stop services:
+4. Stop services:
 
    ```bash
    make down
    ```
 
-## Notes
+## Batch automation (cron)
 
-This is intentionally scaffold-focused. Domain models, richer migrations, authentication, data ingestion workflows, and production deployment manifests will be added incrementally in later phases.
+Install schedule:
+
+```bash
+make cron-install
+```
+
+Run full pipeline once:
+
+```bash
+make cron-run-once
+```
+
+Default UTC schedule in `infra/scripts/cron.daily`:
+
+- 04:00 symbol sync
+- 04:10 filing sync
+- 04:30 price sync
+- 05:00 materializer
+- 05:30 scoring
+- 06:00 recommendation refresh
+
+Each cron wrapper script:
+
+- emits structured JSON logs
+- is idempotent per day via done markers (`var/run/jobs/*.done`)
+- prevents overlapping runs via file lock (`flock`)
+
