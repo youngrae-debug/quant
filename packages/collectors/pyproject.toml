@@ -1,0 +1,19 @@
+[project]
+name = "quant-collectors"
+version = "0.1.0"
+description = "Data collectors for SEC filings and Finnhub market data"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "httpx>=0.27.2,<1.0.0",
+  "pydantic>=2.9.2,<3.0.0",
+  "pydantic-settings>=2.5.2,<3.0.0",
+  "sqlalchemy>=2.0.35,<3.0.0",
+  "psycopg[binary]>=3.2.3,<4.0.0"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
