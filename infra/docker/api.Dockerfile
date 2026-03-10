@@ -11,7 +11,7 @@ COPY apps/api /app/apps/api
 COPY packages /app/packages
 
 WORKDIR /app/apps/api
-RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir -e . -e /app/packages/collectors -e /app/packages/quant-engine
 
 EXPOSE 8000
 CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
