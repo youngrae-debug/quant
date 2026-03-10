@@ -350,6 +350,8 @@ def sync_daily_prices(
 
     until_date = until or datetime.now(UTC).date()
     updated_rows = 0
+    inserted_rows = 0
+    source_totals: dict[str, int] = {}
 
     symbols_sql = text(
         """
@@ -377,6 +379,7 @@ def sync_daily_prices(
             adjusted_close = EXCLUDED.adjusted_close,
             volume = EXCLUDED.volume,
             source = EXCLUDED.source
+        RETURNING (xmax = 0) AS inserted
         """
     )
 
@@ -413,16 +416,27 @@ def sync_daily_prices(
                         continue
 
                     for row in price_rows:
-                        conn.execute(
+                        was_inserted = conn.execute(
                             upsert_sql,
                             {
                                 'symbol_id': symbol['id'],
                                 **row,
                             },
-                        )
+                        ).scalar_one()
+
                         updated_rows += 1
+                        inserted_rows += int(bool(was_inserted))
+                        source = str(row['source'])
+                        source_totals[source] = source_totals.get(source, 0) + 1
                 except Exception as exc:  # noqa: BLE001
                     logger.exception('Failed price sync for %s: %s', ticker, exc)
 
-    logger.info('Price sync complete: %s rows upserted', updated_rows)
+    logger.info(
+        'Price sync complete: %s rows upserted (%s inserted, %s updated)',
+        updated_rows,
+        inserted_rows,
+        updated_rows - inserted_rows,
+    )
+    if source_totals:
+        logger.info('Price sync source breakdown (upserts): %s', source_totals)
     return updated_rows
