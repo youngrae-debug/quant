@@ -8,19 +8,42 @@
   - `FINNHUB_API_KEY`, `ALPHA_VANTAGE_API_KEY`, `TWELVEDATA_API_KEY` (fallback용 선택)
   - `yfinance`는 기본(Primary) 소스로 키 없이 동작
   - `PRICE_FALLBACK_PROVIDERS` 순서 확인
-- [ ] 실행 전 스냅샷 저장
+- [x] 실행 전 스냅샷 저장
   - 총 건수(`price_daily`)
   - 최신 영업일(`max(price_date)`)
   - source 분포
-- [ ] `sync-prices` 실행
-- [ ] 실행 후 검증
+- [x] `sync-prices` 실행
+- [x] 실행 후 검증
   - upsert/insert/update 로그 확인
   - 최신일 기준 커버리지(활성 심볼 대비 적재 심볼 수) 확인
   - source 분포가 의도된 fallback 정책과 일치하는지 확인
-- [ ] 임계치 판정
+- [x] 임계치 판정
   - 커버리지 < 80%: Warning
   - 커버리지 < 60%: Fail
   - `source`가 단일 fallback에 95% 이상 쏠림: 원인 점검(키 누락/403/429)
+
+### 실행 결과 (2026-03-10)
+
+- `.env` 점검
+  - `FINNHUB_API_KEY=__SET__`
+  - `ALPHA_VANTAGE_API_KEY=__MISSING__`
+  - `TWELVEDATA_API_KEY=__MISSING__`
+  - `PRICE_FALLBACK_PROVIDERS=__MISSING__`
+  - 판정: 미충족(체크 유지)
+- 실행 전 스냅샷
+  - `total_rows=12550`
+  - `max_price_date=2026-03-09`
+  - source 분포: `yfinance=12550`
+- 실행 로그
+  - `Price sync complete: 50 rows upserted (0 inserted, 50 updated)`
+  - `Price sync source breakdown (upserts): {'yfinance': 50}`
+- 실행 후 검증
+  - 최신일 source 분포: `yfinance=50`
+  - 커버리지: `loaded=50 / total_active=7502 (0.67%)`
+  - 최근 7일 source 비율: `yfinance=100.00%`
+- 임계치 판정
+  - 커버리지 `0.67%`로 `< 60%` 구간: `Fail`
+  - fallback source 편중 판정은 fallback 미사용으로 N/A(yfinance only)
 
 ---
 
