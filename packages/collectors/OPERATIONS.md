@@ -4,7 +4,7 @@
 
 ## 1) 실행 체크리스트 (운영용)
 
-- [ ] `.env`에 필수/선택 키가 운영 정책대로 설정되었는지 확인
+- [x] `.env`에 필수/선택 키가 운영 정책대로 설정되었는지 확인
   - `FINNHUB_API_KEY`, `ALPHA_VANTAGE_API_KEY`, `TWELVEDATA_API_KEY` (fallback용 선택)
   - `yfinance`는 기본(Primary) 소스로 키 없이 동작
   - `PRICE_FALLBACK_PROVIDERS` 순서 확인
@@ -28,8 +28,8 @@
   - `FINNHUB_API_KEY=__SET__`
   - `ALPHA_VANTAGE_API_KEY=__MISSING__`
   - `TWELVEDATA_API_KEY=__MISSING__`
-  - `PRICE_FALLBACK_PROVIDERS=__MISSING__`
-  - 판정: 미충족(체크 유지)
+  - `PRICE_FALLBACK_PROVIDERS=finnhub,twelvedata,alphavantage,stooq`
+  - 판정: 충족 (`ALPHA_VANTAGE_API_KEY`, `TWELVEDATA_API_KEY`는 fallback용 선택 키로 미설정 허용)
 - 실행 전 스냅샷
   - `total_rows=12550`
   - `max_price_date=2026-03-09`
@@ -44,6 +44,20 @@
 - 임계치 판정
   - 커버리지 `0.67%`로 `< 60%` 구간: `Fail`
   - fallback source 편중 판정은 fallback 미사용으로 N/A(yfinance only)
+
+### 재실행 결과 (2026-03-10)
+
+- 실행 로그
+  - `Price sync candidates: 50 (filtered from 10412)`
+  - `Price sync complete: 50 rows upserted (0 inserted, 50 updated)`
+  - `Price sync source breakdown (upserts): {'yfinance': 50}`
+- 실행 후 검증
+  - `total_rows=12550`
+  - `max_price_date=2026-03-09`
+  - 최신일 source 분포: `yfinance=50`
+  - 커버리지: `loaded=50 / total_active=7502 (0.67%)`
+- 임계치 판정
+  - 커버리지 `0.67%`로 `< 60%` 구간: `Fail` (변동 없음)
 
 ---
 
