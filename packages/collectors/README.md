@@ -62,3 +62,7 @@ ORDER BY COUNT(*) DESC;
 - If Finnhub fails (403 or no candles), configurable fallback providers are used in order via `PRICE_FALLBACK_PROVIDERS` (default: `alphavantage,polygon,twelvedata,yfinance,stooq`).
 - `ALPHA_VANTAGE_API_KEY`, `POLYGON_API_KEY`, `TWELVEDATA_API_KEY` enable each provider; `yfinance` works without API key.
 - Materializer enforces point-in-time logic by using only facts with `filing_date <= as_of_date`.
+
+## Operations templates
+
+- 실행 체크리스트 + SQL + 테스트 템플릿: `OPERATIONS.md`
