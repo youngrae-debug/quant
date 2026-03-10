@@ -47,24 +47,28 @@ def _parse_iso_date(value: str) -> date:
     return datetime.strptime(value, '%Y-%m-%d').date()  # noqa: DTZ007
 
 
-def _fetch_stooq_daily_prices(
-    client: httpx.Client,
+def _fetch_yfinance_daily_prices(
+    _: httpx.Client,
     *,
     ticker: str,
     start_date: date,
     until_date: date,
 ) -> list[dict[str, Any]]:
-    response = client.get('https://stooq.com/q/d/l/', params={'s': f'{ticker.lower()}.us', 'i': 'd'})
-    response.raise_for_status()
+    history = yf.download(
+        ticker,
+        start=start_date.isoformat(),
+        end=(until_date + timedelta(days=1)).isoformat(),
+        interval='1d',
+        auto_adjust=False,
+        progress=False,
+    )
+    if history.empty:
+        return []
 
-    reader = csv.DictReader(StringIO(response.text))
     rows: list[dict[str, Any]] = []
-    for row in reader:
-        if not row.get('Date'):
-            continue
-        price_date = _parse_iso_date(row['Date'])
-        if price_date < start_date or price_date > until_date:
-            continue
+    for idx, row in history.iterrows():
+        price_date = idx.date()
+        adj_close = row['Adj Close'] if 'Adj Close' in row else row['Close']
         rows.append(
             {
                 'price_date': price_date,
@@ -72,13 +76,51 @@ def _fetch_stooq_daily_prices(
                 'high': float(row['High']),
                 'low': float(row['Low']),
                 'close': float(row['Close']),
-                'adjusted_close': float(row['Close']),
-                'volume': int(float(row['Volume'])),
-                'source': 'stooq',
+                'adjusted_close': float(adj_close),
+                'volume': int(row['Volume']),
+                'source': 'yfinance',
             }
         )
-
     return rows
+
+
+def _fetch_finnhub_daily_prices(
+    client: httpx.Client,
+    *,
+    ticker: str,
+    start_date: date,
+    until_date: date,
+) -> list[dict[str, Any]]:
+    if not settings.finnhub_api_key:
+        return []
+
+    payload = _finnhub_request(
+        client,
+        'stock/candle',
+        {
+            'symbol': ticker,
+            'resolution': 'D',
+            'from': int(datetime.combine(start_date, datetime.min.time(), tzinfo=UTC).timestamp()),
+            'to': int(datetime.combine(until_date, datetime.min.time(), tzinfo=UTC).timestamp()),
+        },
+    )
+    if payload.get('s') != 'ok':
+        logger.warning('No Finnhub candle data for %s: %s', ticker, payload.get('s'))
+        return []
+
+    return [
+        {
+            'price_date': datetime.fromtimestamp(ts, tz=UTC).date(),
+            'open': payload['o'][idx],
+            'high': payload['h'][idx],
+            'low': payload['l'][idx],
+            'close': payload['c'][idx],
+            'adjusted_close': payload['c'][idx],
+            'volume': payload['v'][idx],
+            'source': 'finnhub',
+        }
+        for idx, ts in enumerate(payload.get('t', []))
+    ]
 
 
 def _fetch_alpha_vantage_daily_prices(
@@ -133,41 +175,6 @@ def _fetch_alpha_vantage_daily_prices(
     return rows
 
 
-def _fetch_polygon_daily_prices(
-    client: httpx.Client,
-    *,
-    ticker: str,
-    start_date: date,
-    until_date: date,
-) -> list[dict[str, Any]]:
-    if not settings.polygon_api_key:
-        return []
-
-    response = client.get(
-        f'https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day/{start_date.isoformat()}/{until_date.isoformat()}',
-        params={'adjusted': 'true', 'sort': 'asc', 'limit': 50000, 'apiKey': settings.polygon_api_key},
-    )
-    response.raise_for_status()
-    payload = response.json()
-    results = payload.get('results')
-    if not isinstance(results, list):
-        return []
-
-    return [
-        {
-            'price_date': datetime.fromtimestamp(item['t'] / 1000, tz=UTC).date(),
-            'open': float(item['o']),
-            'high': float(item['h']),
-            'low': float(item['l']),
-            'close': float(item['c']),
-            'adjusted_close': float(item['c']),
-            'volume': int(item['v']),
-            'source': 'polygon',
-        }
-        for item in results
-    ]
-
-
 def _fetch_twelvedata_daily_prices(
     client: httpx.Client,
     *,
@@ -217,28 +224,24 @@ def _fetch_twelvedata_daily_prices(
     return rows
 
 
-def _fetch_yfinance_daily_prices(
-    _: httpx.Client,
+def _fetch_stooq_daily_prices(
+    client: httpx.Client,
     *,
     ticker: str,
     start_date: date,
     until_date: date,
 ) -> list[dict[str, Any]]:
-    history = yf.download(
-        ticker,
-        start=start_date.isoformat(),
-        end=(until_date + timedelta(days=1)).isoformat(),
-        interval='1d',
-        auto_adjust=False,
-        progress=False,
-    )
-    if history.empty:
-        return []
+    response = client.get('https://stooq.com/q/d/l/', params={'s': f'{ticker.lower()}.us', 'i': 'd'})
+    response.raise_for_status()
 
+    reader = csv.DictReader(StringIO(response.text))
     rows: list[dict[str, Any]] = []
-    for idx, row in history.iterrows():
-        price_date = idx.date()
-        adj_close = row['Adj Close'] if 'Adj Close' in row else row['Close']
+    for row in reader:
+        if not row.get('Date'):
+            continue
+        price_date = _parse_iso_date(row['Date'])
+        if price_date < start_date or price_date > until_date:
+            continue
         rows.append(
             {
                 'price_date': price_date,
@@ -246,11 +249,12 @@ def _fetch_yfinance_daily_prices(
                 'high': float(row['High']),
                 'low': float(row['Low']),
                 'close': float(row['Close']),
-                'adjusted_close': float(adj_close),
-                'volume': int(row['Volume']),
-                'source': 'yfinance',
+                'adjusted_close': float(row['Close']),
+                'volume': int(float(row['Volume'])),
+                'source': 'stooq',
             }
         )
+
     return rows
 
 
@@ -262,11 +266,10 @@ def _fallback_prices(
     until_date: date,
 ) -> list[dict[str, Any]]:
     provider_fetchers: dict[str, Any] = {
+        'finnhub': _fetch_finnhub_daily_prices,
+        'twelvedata': _fetch_twelvedata_daily_prices,
         'alphavantage': _fetch_alpha_vantage_daily_prices,
         'stooq': _fetch_stooq_daily_prices,
-        'polygon': _fetch_polygon_daily_prices,
-        'twelvedata': _fetch_twelvedata_daily_prices,
-        'yfinance': _fetch_yfinance_daily_prices,
     }
     fallback_chain = tuple(
         provider.strip().lower()
@@ -284,6 +287,8 @@ def _fallback_prices(
             if rows:
                 logger.info('Fallback provider %s used for %s (%s rows)', provider, ticker, len(rows))
                 return rows
+        except FinnhubForbiddenError:
+            logger.warning('Finnhub forbidden for %s; continuing fallback chain', ticker)
         except Exception as exc:  # noqa: BLE001
             logger.warning('Fallback provider %s failed for %s: %s', provider, ticker, exc)
 
@@ -298,36 +303,13 @@ def _fetch_symbol_prices(
     until_date: date,
 ) -> list[dict[str, Any]]:
     try:
-        payload = _finnhub_request(
-            client,
-            'stock/candle',
-            {
-                'symbol': ticker,
-                'resolution': 'D',
-                'from': int(datetime.combine(start_date, datetime.min.time(), tzinfo=UTC).timestamp()),
-                'to': int(datetime.combine(until_date, datetime.min.time(), tzinfo=UTC).timestamp()),
-            },
-        )
-        if payload.get('s') != 'ok':
-            logger.warning('No Finnhub candle data for %s: %s', ticker, payload.get('s'))
-            return _fallback_prices(client, ticker=ticker, start_date=start_date, until_date=until_date)
+        rows = _fetch_yfinance_daily_prices(client, ticker=ticker, start_date=start_date, until_date=until_date)
+        if rows:
+            return rows
+    except Exception as exc:  # noqa: BLE001
+        logger.warning('Primary provider yfinance failed for %s: %s', ticker, exc)
 
-        return [
-            {
-                'price_date': datetime.fromtimestamp(ts, tz=UTC).date(),
-                'open': payload['o'][idx],
-                'high': payload['h'][idx],
-                'low': payload['l'][idx],
-                'close': payload['c'][idx],
-                'adjusted_close': payload['c'][idx],
-                'volume': payload['v'][idx],
-                'source': 'finnhub',
-            }
-            for idx, ts in enumerate(payload.get('t', []))
-        ]
-    except FinnhubForbiddenError:
-        logger.warning('Finnhub forbidden for %s; using fallback providers', ticker)
-        return _fallback_prices(client, ticker=ticker, start_date=start_date, until_date=until_date)
+    return _fallback_prices(client, ticker=ticker, start_date=start_date, until_date=until_date)
 
 
 def _resolve_sync_start(last_price_date: date | None) -> date:
@@ -345,9 +327,6 @@ def sync_daily_prices(
     max_symbols: int | None = None,
     allowed_exchanges: tuple[str, ...] = ('Nasdaq', 'NYSE'),
 ) -> int:
-    if not settings.finnhub_api_key:
-        raise ValueError('FINNHUB_API_KEY is required for price sync')
-
     until_date = until or datetime.now(UTC).date()
     updated_rows = 0
     inserted_rows = 0

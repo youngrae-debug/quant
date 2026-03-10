@@ -5,8 +5,8 @@
 ## 1) 실행 체크리스트 (운영용)
 
 - [ ] `.env`에 필수/선택 키가 운영 정책대로 설정되었는지 확인
-  - `FINNHUB_API_KEY` (필수)
-  - `ALPHA_VANTAGE_API_KEY`, `POLYGON_API_KEY`, `TWELVEDATA_API_KEY` (선택)
+  - `FINNHUB_API_KEY`, `ALPHA_VANTAGE_API_KEY`, `TWELVEDATA_API_KEY` (fallback용 선택)
+  - `yfinance`는 기본(Primary) 소스로 키 없이 동작
   - `PRICE_FALLBACK_PROVIDERS` 순서 확인
 - [ ] 실행 전 스냅샷 저장
   - 총 건수(`price_daily`)
@@ -134,8 +134,8 @@ def test_no_candle_triggers_fallback(monkeypatch):
 
 def test_unknown_fallback_provider_is_skipped(caplog, monkeypatch):
     """미등록 provider가 설정되어도 warning 로그 후 다음 provider를 시도해야 한다."""
-    # Arrange: PRICE_FALLBACK_PROVIDERS='unknown,yfinance'
-    # Assert: warning 포함 + yfinance rows 반환
+    # Arrange: PRICE_FALLBACK_PROVIDERS='unknown,finnhub'
+    # Assert: warning 포함 + finnhub rows 반환
 
 
 def test_provider_parser_filters_date_range():
