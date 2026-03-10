@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+import re
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
@@ -12,6 +13,8 @@ from .db import engine
 from .logging import get_logger
 
 logger = get_logger(__name__)
+
+_SUPPORTED_TICKER_PATTERN = re.compile(r'^[A-Z]{1,5}$')
 
 
 def _finnhub_request(client: httpx.Client, endpoint: str, params: dict[str, Any]) -> dict[str, Any]:
@@ -37,7 +40,15 @@ def _resolve_sync_start(last_price_date: date | None) -> date:
     return last_price_date + timedelta(days=1)
 
 
-def sync_daily_prices(until: date | None = None) -> int:
+def _is_supported_ticker(ticker: str) -> bool:
+    return bool(_SUPPORTED_TICKER_PATTERN.fullmatch(ticker))
+
+
+def sync_daily_prices(
+    until: date | None = None,
+    max_symbols: int | None = None,
+    allowed_exchanges: tuple[str, ...] = ('Nasdaq', 'NYSE'),
+) -> int:
     if not settings.finnhub_api_key:
         raise ValueError('FINNHUB_API_KEY is required for price sync')
 
@@ -46,11 +57,11 @@ def sync_daily_prices(until: date | None = None) -> int:
 
     symbols_sql = text(
         """
-        SELECT s.id, s.ticker, MAX(p.price_date) AS last_price_date
+        SELECT s.id, s.ticker, s.exchange, MAX(p.price_date) AS last_price_date
         FROM symbols s
         LEFT JOIN price_daily p ON p.symbol_id = s.id
         WHERE s.is_active = true
-        GROUP BY s.id, s.ticker
+        GROUP BY s.id, s.ticker, s.exchange
         ORDER BY s.id
         """
     )
@@ -76,9 +87,21 @@ def sync_daily_prices(until: date | None = None) -> int:
     with engine.begin() as conn:
         symbols = conn.execute(symbols_sql).mappings().all()
 
+    filtered_symbols = [
+        symbol
+        for symbol in symbols
+        if _is_supported_ticker(str(symbol['ticker']))
+        and (symbol['exchange'] in allowed_exchanges)
+    ]
+
+    if max_symbols is not None and max_symbols > 0:
+        filtered_symbols = filtered_symbols[:max_symbols]
+
+    logger.info('Price sync candidates: %s (filtered from %s)', len(filtered_symbols), len(symbols))
+
     with httpx.Client(timeout=settings.request_timeout_seconds) as client:
         with engine.begin() as conn:
-            for symbol in symbols:
+            for symbol in filtered_symbols:
                 ticker = symbol['ticker']
                 start_date = _resolve_sync_start(symbol['last_price_date'])
                 if start_date > until_date:

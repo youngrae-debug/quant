@@ -19,7 +19,8 @@ def main() -> None:
     filings_parser = sub.add_parser('sync-filings')
     filings_parser.add_argument('--max-symbols', type=int, default=100)
 
-    sub.add_parser('sync-prices')
+    prices_parser = sub.add_parser('sync-prices')
+    prices_parser.add_argument('--max-symbols', type=int, default=50)
 
     materializer_parser = sub.add_parser('materialize-fundamentals')
     materializer_parser.add_argument('--as-of-date', required=True, help='YYYY-MM-DD')
@@ -31,7 +32,7 @@ def main() -> None:
     elif args.job == 'sync-filings':
         sync_sec_filings(max_symbols=args.max_symbols)
     elif args.job == 'sync-prices':
-        sync_daily_prices()
+        sync_daily_prices(max_symbols=args.max_symbols)
     elif args.job == 'materialize-fundamentals':
         materialize_daily_fundamentals(date.fromisoformat(args.as_of_date))
 

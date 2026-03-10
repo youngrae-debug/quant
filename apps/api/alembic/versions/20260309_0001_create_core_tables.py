@@ -16,12 +16,10 @@ branch_labels = None
 depends_on = None
 
 
-recommendation_action = sa.Enum('buy', 'hold', 'sell', name='recommendation_action')
+recommendation_action = sa.Enum('buy', 'hold', 'sell', name='recommendation_action', create_type=False)
 
 
 def upgrade() -> None:
-    recommendation_action.create(op.get_bind(), checkfirst=True)
-
     op.create_table(
         'symbols',
         sa.Column('id', sa.BigInteger(), primary_key=True, autoincrement=True),

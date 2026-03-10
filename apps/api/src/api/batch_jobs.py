@@ -87,7 +87,7 @@ def refresh_recommendations(as_of_date: date) -> int:
     upsert_sql = text(
         """
         INSERT INTO recommendations (symbol_id, recommendation_date, action, conviction, rationale, created_at)
-        VALUES (:symbol_id, :recommendation_date, :action::recommendation_action, :conviction, :rationale, now())
+        VALUES (:symbol_id, :recommendation_date, CAST(:action AS recommendation_action), :conviction, :rationale, now())
         ON CONFLICT (symbol_id, recommendation_date) DO UPDATE SET
             action = EXCLUDED.action,
             conviction = EXCLUDED.conviction,

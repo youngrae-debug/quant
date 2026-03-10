@@ -6,7 +6,7 @@ class CollectorSettings(BaseSettings):
     sec_user_agent: str = 'quant-research/0.1 (ops@example.com)'
     finnhub_api_key: str = ''
     finnhub_base_url: str = 'https://finnhub.io/api/v1'
-    sec_base_url: str = 'https://www.sec.gov'
+    sec_base_url: str = 'https://data.sec.gov'
     symbol_default_lookback_days: int = 365
     request_timeout_seconds: int = 30
     rate_limit_sleep_seconds: float = 1.5

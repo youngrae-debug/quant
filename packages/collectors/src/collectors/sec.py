@@ -48,7 +48,7 @@ def sync_sec_symbols(enrich_sic: bool = True, sic_enrichment_limit: int = 200) -
     headers = {'User-Agent': settings.sec_user_agent}
     client = httpx.Client(timeout=settings.request_timeout_seconds, headers=headers)
 
-    ticker_url = f'{settings.sec_base_url}/files/company_tickers_exchange.json'
+    ticker_url = 'https://www.sec.gov/files/company_tickers_exchange.json'
     payload = _fetch_json(client, ticker_url)
 
     rows = payload.get('data', [])
@@ -82,8 +82,8 @@ def sync_sec_symbols(enrich_sic: bool = True, sic_enrichment_limit: int = 200) -
                     {
                         'ticker': ticker,
                         'cik': _normalize_cik(row[0]),
-                        'exchange': str(row[1]).strip() or None,
-                        'name': str(row[3]).strip() or None,
+                        'exchange': str(row[3]).strip() or None,
+                        'name': str(row[1]).strip() or None,
                     },
                 )
                 synced += 1

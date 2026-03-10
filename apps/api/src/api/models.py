@@ -22,7 +22,7 @@ class Symbol(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     ticker: Mapped[str] = mapped_column(String(16), nullable=False, unique=True)
-    cik: Mapped[str | None] = mapped_column(String(10), unique=True)
+    cik: Mapped[str | None] = mapped_column(String(10))
     sic: Mapped[str | None] = mapped_column(String(8))
     name: Mapped[str | None] = mapped_column(String(255))
     exchange: Mapped[str | None] = mapped_column(String(64))

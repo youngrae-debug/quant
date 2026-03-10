@@ -18,12 +18,10 @@ depends_on = None
 def upgrade() -> None:
     op.add_column('symbols', sa.Column('cik', sa.String(length=10), nullable=True))
     op.add_column('symbols', sa.Column('sic', sa.String(length=8), nullable=True))
-    op.create_unique_constraint('uq_symbols_cik', 'symbols', ['cik'])
-    op.create_index('ix_symbols_cik', 'symbols', ['cik'], unique=True)
+    op.create_index('ix_symbols_cik', 'symbols', ['cik'], unique=False)
 
 
 def downgrade() -> None:
     op.drop_index('ix_symbols_cik', table_name='symbols')
-    op.drop_constraint('uq_symbols_cik', 'symbols', type_='unique')
     op.drop_column('symbols', 'sic')
     op.drop_column('symbols', 'cik')
