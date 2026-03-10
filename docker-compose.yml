@@ -65,6 +65,7 @@ services:
       start_period: 20s
     volumes:
       - ./apps/web:/app/apps/web
+      - /app/apps/web/node_modules
 
 volumes:
   postgres_data:
