@@ -8,16 +8,16 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Quant | Systematic Equity Research',
-    template: '%s | Quant',
+    default: 'WATS | Systematic Equity Research',
+    template: '%s | WATS',
   },
   description:
-    'Quant provides explainable stock rankings and recommendations powered by point-in-time fundamentals, momentum, and expectation signals.',
+    'WATS provides explainable stock rankings and recommendations powered by point-in-time fundamentals, momentum, and expectation signals.',
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Quant',
+    title: 'WATS',
     description:
       'Explainable stock rankings and recommendations powered by point-in-time data and transparent metrics.',
     type: 'website',
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Quant',
+    title: 'WATS',
     description: 'Systematic equity research with transparent scoring and recommendation rationale.',
   },
 };
