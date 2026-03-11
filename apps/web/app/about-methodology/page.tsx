@@ -1,3 +1,27 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'About Methodology | Quant',
+  description:
+    'Learn how Quant builds point-in-time financial datasets, ownership-aware signals, and an explainable metrics engine for stock recommendations.',
+  alternates: {
+    canonical: '/about-methodology',
+  },
+  openGraph: {
+    title: 'Quant Methodology',
+    description:
+      'Point-in-time data integrity, institutional ownership signals, and transparent metrics engine design.',
+    type: 'article',
+    url: '/about-methodology',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Quant Methodology',
+    description:
+      'How Quant builds explainable equity recommendations with PIT data and metrics engine controls.',
+  },
+};
+
 export default function MethodologyPage() {
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
