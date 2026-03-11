@@ -10,7 +10,7 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
     const saved = window.localStorage.getItem('theme');
@@ -35,7 +35,7 @@ export function ThemeToggle() {
         applyTheme(nextTheme);
         window.localStorage.setItem('theme', nextTheme);
       }}
-      className="rounded border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-emerald-400 hover:text-emerald-300"
+      className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 shadow-[4px_4px_10px_rgba(148,163,184,0.16),-4px_-4px_10px_rgba(255,255,255,0.9)] transition hover:border-emerald-400 hover:text-emerald-300"
       aria-label={`Switch to ${nextTheme} theme`}
       title={`Switch to ${nextTheme} theme`}
     >
