@@ -16,7 +16,7 @@ export function SiteHeader() {
         <Link href="/" className="text-sm font-semibold tracking-[0.2em] text-emerald-300">
           WATS
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-2">
           <nav className="flex gap-5 text-sm text-slate-300">
             {nav.map((item) => (
               <Link key={item.href} href={item.href} className="transition hover:text-white">
