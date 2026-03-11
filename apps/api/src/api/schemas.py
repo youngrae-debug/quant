@@ -78,3 +78,18 @@ class PriceHistoryResponse(BaseModel):
 class RecommendationsLatestResponse(BaseModel):
     as_of_date: date | None = Field(default=None)
     items: list[RecommendationItem]
+
+
+class TurnaroundItem(BaseModel):
+    symbol: str
+    name: str | None
+    base_year: int
+    next_year: int
+    turnaround_year: int
+    base_year_net_income: float
+    turnaround_year_net_income: float
+
+
+class TurnaroundResponse(BaseModel):
+    items: list[TurnaroundItem]
+    meta: PaginationMeta

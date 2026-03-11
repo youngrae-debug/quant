@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from .config import settings
 from .db import get_db
-from .models import FactorScoreDaily, PriceDaily, Recommendation, Symbol
+from .models import FactorScoreDaily, FilingFact, PriceDaily, Recommendation, Symbol
 from .schemas import (
     HealthResponse,
     PaginationMeta,
@@ -21,6 +21,8 @@ from .schemas import (
     RecommendationsLatestResponse,
     StockDetailResponse,
     TopPicksResponse,
+    TurnaroundItem,
+    TurnaroundResponse,
 )
 
 app = FastAPI(title=settings.app_name)
@@ -252,3 +254,86 @@ def recommendations_latest(
         for rec, ticker in rows
     ]
     return RecommendationsLatestResponse(as_of_date=latest_date, items=items)
+
+
+@app.get('/turnarounds', tags=['rankings'], response_model=TurnaroundResponse)
+def turnarounds(
+    page: int = Query(default=1, ge=1),
+    size: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+) -> TurnaroundResponse:
+    offset, limit = _pagination(page, size)
+
+    year_col = func.extract('year', FilingFact.period_end_date).cast(int)
+    yearly = (
+        select(
+            FilingFact.symbol_id.label('symbol_id'),
+            year_col.label('year'),
+            func.sum(func.coalesce(FilingFact.net_income_ttm, 0)).label('net_income'),
+        )
+        .group_by(FilingFact.symbol_id, year_col)
+        .subquery()
+    )
+
+    y0 = yearly.alias('y0')
+    y2 = yearly.alias('y2')
+
+    candidates = (
+        select(
+            y0.c.symbol_id.label('symbol_id'),
+            y0.c.year.label('base_year'),
+            y0.c.net_income.label('base_year_net_income'),
+            y2.c.year.label('turnaround_year'),
+            y2.c.net_income.label('turnaround_year_net_income'),
+        )
+        .join(
+            y2,
+            and_(
+                y2.c.symbol_id == y0.c.symbol_id,
+                y2.c.year == y0.c.year + 2,
+            ),
+        )
+        .where(
+            y0.c.net_income < 0,
+            y2.c.net_income > 0,
+        )
+        .subquery()
+    )
+
+    base_query = (
+        select(
+            Symbol.ticker.label('symbol'),
+            Symbol.name.label('name'),
+            candidates.c.base_year,
+            (candidates.c.base_year + 1).label('next_year'),
+            candidates.c.turnaround_year,
+            candidates.c.base_year_net_income,
+            candidates.c.turnaround_year_net_income,
+        )
+        .join(Symbol, Symbol.id == candidates.c.symbol_id)
+        .where(Symbol.is_active == True)  # noqa: E712
+        .order_by(
+            candidates.c.turnaround_year.desc(),
+            candidates.c.turnaround_year_net_income.desc(),
+            Symbol.ticker.asc(),
+        )
+    )
+
+    total = db.scalar(select(func.count()).select_from(base_query.subquery())) or 0
+    rows = db.execute(base_query.offset(offset).limit(limit)).all()
+
+    items = [
+        TurnaroundItem(
+            symbol=row.symbol,
+            name=row.name,
+            base_year=int(row.base_year),
+            next_year=int(row.next_year),
+            turnaround_year=int(row.turnaround_year),
+            base_year_net_income=float(row.base_year_net_income),
+            turnaround_year_net_income=float(row.turnaround_year_net_income),
+        )
+        for row in rows
+    ]
+
+    return TurnaroundResponse(items=items, meta=PaginationMeta(page=page, size=size, total=total))
+
