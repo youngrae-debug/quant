@@ -4,12 +4,12 @@ from datetime import date
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func, select, text
 from sqlalchemy.orm import Session
 
 from .config import settings
 from .db import get_db
-from .models import FactorScoreDaily, PriceDaily, Recommendation, Symbol
+from .models import FactorScoreDaily, FilingFact, PriceDaily, Recommendation, Symbol
 from .schemas import (
     HealthResponse,
     PaginationMeta,
@@ -21,6 +21,8 @@ from .schemas import (
     RecommendationsLatestResponse,
     StockDetailResponse,
     TopPicksResponse,
+    TurnaroundItem,
+    TurnaroundResponse,
 )
 
 app = FastAPI(title=settings.app_name)
@@ -252,3 +254,68 @@ def recommendations_latest(
         for rec, ticker in rows
     ]
     return RecommendationsLatestResponse(as_of_date=latest_date, items=items)
+
+
+@app.get('/turnarounds', tags=['rankings'], response_model=TurnaroundResponse)
+def turnarounds(
+    page: int = Query(default=1, ge=1),
+    size: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+) -> TurnaroundResponse:
+    offset, limit = _pagination(page, size)
+
+    query = text(
+        """
+        WITH yearly AS (
+            SELECT
+                ff.symbol_id,
+                EXTRACT(YEAR FROM ff.period_end_date)::int AS year,
+                SUM(COALESCE(ff.net_income_ttm, 0))::float AS net_income
+            FROM filing_facts ff
+            GROUP BY ff.symbol_id, EXTRACT(YEAR FROM ff.period_end_date)::int
+        ), candidates AS (
+            SELECT
+                y0.symbol_id,
+                y0.year AS base_year,
+                y0.net_income AS base_year_net_income,
+                y2.year AS turnaround_year,
+                y2.net_income AS turnaround_year_net_income
+            FROM yearly y0
+            JOIN yearly y2
+              ON y2.symbol_id = y0.symbol_id
+             AND y2.year = y0.year + 2
+            WHERE y0.net_income < 0
+              AND y2.net_income > 0
+        )
+        SELECT
+            s.ticker AS symbol,
+            s.name AS name,
+            c.base_year,
+            c.base_year + 1 AS next_year,
+            c.turnaround_year,
+            c.base_year_net_income,
+            c.turnaround_year_net_income
+        FROM candidates c
+        JOIN symbols s ON s.id = c.symbol_id
+        WHERE s.is_active = true
+        ORDER BY c.turnaround_year DESC, c.turnaround_year_net_income DESC, s.ticker ASC
+        """
+    )
+
+    total = db.execute(text(f'SELECT COUNT(*) FROM ({query.text}) q')).scalar() or 0
+    rows = db.execute(text(f'{query.text} OFFSET :offset LIMIT :limit'), {'offset': offset, 'limit': limit}).mappings().all()
+
+    items = [
+        TurnaroundItem(
+            symbol=row['symbol'],
+            name=row['name'],
+            base_year=row['base_year'],
+            next_year=row['next_year'],
+            turnaround_year=row['turnaround_year'],
+            base_year_net_income=float(row['base_year_net_income']),
+            turnaround_year_net_income=float(row['turnaround_year_net_income']),
+        )
+        for row in rows
+    ]
+
+    return TurnaroundResponse(items=items, meta=PaginationMeta(page=page, size=size, total=total))
