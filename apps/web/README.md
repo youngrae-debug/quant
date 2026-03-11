@@ -21,5 +21,7 @@ This repository is a monorepo. For Vercel deployments, point the project at the 
 3. If you keep a root `vercel.json`, use monorepo-aware commands:
    - install: `cd apps/web && npm install`
    - build: `cd apps/web && npm run build`
+4. Do **not** set `outputDirectory` for Next.js (`.next` should be handled by Vercel automatically).
 
 If your project still runs `npx expo export --platform web`, clear any stale custom build command and re-deploy.
+If deployment succeeds but the URL shows `404: NOT_FOUND`, check that the domain is attached to the latest production deployment and that Root Directory is still `apps/web`.
