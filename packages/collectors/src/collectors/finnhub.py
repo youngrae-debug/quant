@@ -48,6 +48,18 @@ def _parse_iso_date(value: str) -> date:
     return datetime.strptime(value, '%Y-%m-%d').date()  # noqa: DTZ007
 
 
+def _coerce_float(value: Any) -> float:
+    if hasattr(value, 'iloc'):
+        return float(value.iloc[0])
+    return float(value)
+
+
+def _coerce_int(value: Any) -> int:
+    if hasattr(value, 'iloc'):
+        return int(value.iloc[0])
+    return int(value)
+
+
 def _fetch_yfinance_daily_prices(
     _: httpx.Client,
     *,
@@ -73,12 +85,12 @@ def _fetch_yfinance_daily_prices(
         rows.append(
             {
                 'price_date': price_date,
-                'open': float(row['Open']),
-                'high': float(row['High']),
-                'low': float(row['Low']),
-                'close': float(row['Close']),
-                'adjusted_close': float(adj_close),
-                'volume': int(row['Volume']),
+                'open': _coerce_float(row['Open']),
+                'high': _coerce_float(row['High']),
+                'low': _coerce_float(row['Low']),
+                'close': _coerce_float(row['Close']),
+                'adjusted_close': _coerce_float(adj_close),
+                'volume': _coerce_int(row['Volume']),
                 'source': 'yfinance',
             }
         )
