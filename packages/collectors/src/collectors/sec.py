@@ -145,7 +145,7 @@ def sync_sec_filings(max_symbols: int = 100) -> int:
         INSERT INTO filing_facts (
             symbol_id, filing_date, period_end_date, revenue_ttm, net_income_ttm, eps_ttm, source, raw_payload, created_at
         ) VALUES (
-            :symbol_id, :filing_date, :period_end_date, :revenue_ttm, :net_income_ttm, :eps_ttm, 'sec-companyfacts', :raw_payload::jsonb, now()
+            :symbol_id, :filing_date, :period_end_date, :revenue_ttm, :net_income_ttm, :eps_ttm, 'sec-companyfacts', CAST(:raw_payload AS jsonb), now()
         )
         ON CONFLICT (symbol_id, filing_date, period_end_date)
         DO UPDATE SET

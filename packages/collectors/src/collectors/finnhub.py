@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import re
 import time
 from datetime import UTC, date, datetime, timedelta
@@ -294,7 +295,6 @@ def _fallback_prices(
 
     return []
 
-
 def _fetch_symbol_prices(
     client: httpx.Client,
     *,
@@ -419,3 +419,121 @@ def sync_daily_prices(
     if source_totals:
         logger.info('Price sync source breakdown (upserts): %s', source_totals)
     return updated_rows
+
+
+
+def sync_yfinance_symbol_info(max_symbols: int = 500) -> int:
+        """Enrich symbols with sector/industry and fundamentals data from yfinance."""
+        symbols_sql = text(
+            """
+            SELECT id, ticker
+            FROM symbols
+            WHERE is_active = true
+              AND exchange IN ('Nasdaq', 'NYSE')
+              AND ticker ~ '^[A-Z]{1,5}$'
+            ORDER BY id
+            LIMIT :max_symbols
+            """
+        )
+        update_symbol_sql = text(
+            """
+            UPDATE symbols
+            SET sector = :sector, industry = :industry, updated_at = now()
+            WHERE id = :id
+            """
+        )
+        upsert_filing_sql = text(
+            """
+            INSERT INTO filing_facts (
+                symbol_id, filing_date, period_end_date,
+                market_cap, pe_ratio, pb_ratio, eps_ttm, revenue_ttm, net_income_ttm,
+                source, raw_payload, created_at
+            ) VALUES (
+                :symbol_id, :filing_date, :period_end_date,
+                :market_cap, :pe_ratio, :pb_ratio, :eps_ttm, :revenue_ttm, :net_income_ttm,
+                'yfinance', CAST(:raw_payload AS jsonb), now()
+            )
+            ON CONFLICT (symbol_id, filing_date, period_end_date)
+            DO UPDATE SET
+                market_cap = COALESCE(EXCLUDED.market_cap, filing_facts.market_cap),
+                pe_ratio = COALESCE(EXCLUDED.pe_ratio, filing_facts.pe_ratio),
+                pb_ratio = COALESCE(EXCLUDED.pb_ratio, filing_facts.pb_ratio),
+                eps_ttm = COALESCE(EXCLUDED.eps_ttm, filing_facts.eps_ttm),
+                revenue_ttm = COALESCE(EXCLUDED.revenue_ttm, filing_facts.revenue_ttm),
+                net_income_ttm = COALESCE(EXCLUDED.net_income_ttm, filing_facts.net_income_ttm),
+                source = EXCLUDED.source,
+                raw_payload = EXCLUDED.raw_payload
+            """
+        )
+
+        today = datetime.now(UTC).date()
+        enriched = 0
+
+        with engine.connect() as read_conn:
+            symbols = read_conn.execute(symbols_sql, {'max_symbols': max_symbols}).mappings().all()
+
+        for symbol in symbols:
+            ticker = str(symbol['ticker'])
+            try:
+                info = yf.Ticker(ticker).info
+                if not info or not isinstance(info, dict):
+                    continue
+
+                sector = info.get('sector') or None
+                industry = info.get('industry') or None
+                pe_ratio = info.get('trailingPE') or info.get('forwardPE') or None
+                pb_ratio = info.get('priceToBook') or None
+                market_cap = info.get('marketCap') or None
+                eps_ttm = info.get('trailingEps') or None
+                revenue_ttm = info.get('totalRevenue') or None
+                net_income_ttm = info.get('netIncomeToCommon') or None
+
+                has_meta = bool(sector or industry)
+                has_fundamentals = any(
+                    v is not None for v in [pe_ratio, pb_ratio, market_cap, eps_ttm, revenue_ttm]
+                )
+
+                if not has_meta and not has_fundamentals:
+                    continue
+
+                with engine.begin() as conn:
+                    if has_meta:
+                        conn.execute(
+                            update_symbol_sql,
+                            {'id': symbol['id'], 'sector': sector, 'industry': industry},
+                        )
+
+                    if has_fundamentals:
+                        raw = json.dumps({
+                            'ticker': ticker,
+                            'fetched_at': datetime.now(UTC).isoformat(),
+                            'sector': sector,
+                            'industry': industry,
+                        })
+                        conn.execute(
+                            upsert_filing_sql,
+                            {
+                                'symbol_id': symbol['id'],
+                                'filing_date': today,
+                                'period_end_date': today,
+                                'market_cap': market_cap,
+                                'pe_ratio': pe_ratio,
+                                'pb_ratio': pb_ratio,
+                                'eps_ttm': eps_ttm,
+                                'revenue_ttm': revenue_ttm,
+                                'net_income_ttm': net_income_ttm,
+                                'raw_payload': raw,
+                            },
+                        )
+
+                enriched += 1
+                if enriched % 50 == 0:
+                    logger.info('yfinance symbol info progress: %s enriched', enriched)
+
+            except Exception as exc:  # noqa: BLE001
+                logger.warning('yfinance info failed for %s: %s', ticker, exc)
+
+            time.sleep(0.05)
+
+        logger.info('yfinance symbol info enrichment complete: %s enriched out of %s', enriched, len(symbols))
+        return enriched

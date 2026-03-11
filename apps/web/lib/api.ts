@@ -38,6 +38,22 @@ export type PriceHistoryItem = {
   volume: number | null;
 };
 
+export type PaginationMeta = {
+  page: number;
+  size: number;
+  total: number;
+};
+
+export type PaginatedRecommendations = {
+  items: Recommendation[];
+  meta: PaginationMeta;
+};
+
+export type PaginatedRankings = {
+  items: Ranking[];
+  meta: PaginationMeta;
+};
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 
 async function request<T>(path: string): Promise<T | null> {
@@ -54,38 +70,23 @@ export async function getHealth(): Promise<Health | null> {
   return request<Health>('/health');
 }
 
-export async function getTopPicks(): Promise<Recommendation[]> {
-  const data = await request<{ items: Recommendation[] }>('/top-picks?page=1&size=10');
-  return data?.items ?? [
-    { symbol: 'MSFT', recommendation_date: '2026-03-09', action: 'buy', conviction: 0.82, target_price: 530, horizon_days: 180, rationale: 'AI monetization + margin resilience' },
-    { symbol: 'NVDA', recommendation_date: '2026-03-09', action: 'buy', conviction: 0.8, target_price: 1450, horizon_days: 180, rationale: 'Datacenter demand durability' },
-  ];
+export async function getTopPicks(page = 1, size = 50): Promise<PaginatedRecommendations> {
+  const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+  const safeSize = Number.isFinite(size) && size > 0 ? Math.min(100, Math.floor(size)) : 50;
+  const data = await request<PaginatedRecommendations>(`/top-picks?page=${safePage}&size=${safeSize}`);
+  return data ?? { items: [], meta: { page: safePage, size: safeSize, total: 0 } };
 }
 
-export async function getRankings(): Promise<Ranking[]> {
-  const data = await request<{ items: Ranking[] }>('/rankings?page=1&size=20');
-  return data?.items ?? [
-    { symbol: 'MSFT', score_date: '2026-03-09', final_score: 91.2 },
-    { symbol: 'NVDA', score_date: '2026-03-09', final_score: 89.4 },
-    { symbol: 'META', score_date: '2026-03-09', final_score: 84.8 },
-  ];
+export async function getRankings(page = 1, size = 50): Promise<PaginatedRankings> {
+  const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+  const safeSize = Number.isFinite(size) && size > 0 ? Math.min(100, Math.floor(size)) : 50;
+  const data = await request<PaginatedRankings>(`/rankings?page=${safePage}&size=${safeSize}`);
+  return data ?? { items: [], meta: { page: safePage, size: safeSize, total: 0 } };
 }
 
 export async function getStock(symbol: string): Promise<StockDetail | null> {
   const data = await request<StockDetail>(`/stocks/${symbol}`);
-  if (data) return data;
-  return {
-    symbol: symbol.toUpperCase(),
-    name: 'Sample Corp',
-    exchange: 'NASDAQ',
-    sector: 'Technology',
-    industry: 'Software',
-    cik: null,
-    sic: null,
-    latest_close: 123.45,
-    latest_price_date: '2026-03-09',
-    latest_recommendation: null,
-  };
+  return data;
 }
 
 export async function getStockHistory(symbol: string): Promise<PriceHistoryItem[]> {
