@@ -22,6 +22,7 @@ class PaginatedResponse(BaseModel):
 
 class RecommendationItem(BaseModel):
     symbol: str
+    name: str | None = None
     recommendation_date: date
     action: str
     conviction: float | None
@@ -32,6 +33,7 @@ class RecommendationItem(BaseModel):
 
 class RankingItem(BaseModel):
     symbol: str
+    name: str | None = None
     score_date: date
     final_score: float
 

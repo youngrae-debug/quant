@@ -1,6 +1,7 @@
 export type Health = { status: string };
 export type Recommendation = {
   symbol: string;
+  name: string | null;
   recommendation_date: string;
   action: string;
   conviction: number | null;
@@ -11,6 +12,7 @@ export type Recommendation = {
 
 export type Ranking = {
   symbol: string;
+  name: string | null;
   score_date: string;
   final_score: number;
 };
@@ -85,17 +87,19 @@ export async function getHealth(): Promise<Health | null> {
   return request<Health>('/health');
 }
 
-export async function getTopPicks(page = 1, size = 50): Promise<PaginatedRecommendations> {
+export async function getTopPicks(page = 1, size = 50, q?: string): Promise<PaginatedRecommendations> {
   const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
   const safeSize = Number.isFinite(size) && size > 0 ? Math.min(100, Math.floor(size)) : 50;
-  const data = await request<PaginatedRecommendations>(`/top-picks?page=${safePage}&size=${safeSize}`);
+  const query = q?.trim() ? `&q=${encodeURIComponent(q.trim())}` : '';
+  const data = await request<PaginatedRecommendations>(`/top-picks?page=${safePage}&size=${safeSize}${query}`);
   return data ?? { items: [], meta: { page: safePage, size: safeSize, total: 0 } };
 }
 
-export async function getRankings(page = 1, size = 50): Promise<PaginatedRankings> {
+export async function getRankings(page = 1, size = 50, q?: string): Promise<PaginatedRankings> {
   const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
   const safeSize = Number.isFinite(size) && size > 0 ? Math.min(100, Math.floor(size)) : 50;
-  const data = await request<PaginatedRankings>(`/rankings?page=${safePage}&size=${safeSize}`);
+  const query = q?.trim() ? `&q=${encodeURIComponent(q.trim())}` : '';
+  const data = await request<PaginatedRankings>(`/rankings?page=${safePage}&size=${safeSize}${query}`);
   return data ?? { items: [], meta: { page: safePage, size: safeSize, total: 0 } };
 }
 

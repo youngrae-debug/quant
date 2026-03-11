@@ -49,6 +49,7 @@ def healthcheck() -> HealthResponse:
 def top_picks(
     page: int = Query(default=1, ge=1),
     size: int = Query(default=20, ge=1, le=100),
+    q: str | None = Query(default=None, min_length=1),
     db: Session = Depends(get_db),
 ) -> TopPicksResponse:
     offset, limit = _pagination(page, size)
@@ -58,11 +59,16 @@ def top_picks(
         return TopPicksResponse(items=[], meta=PaginationMeta(page=page, size=size, total=0))
 
     base_query = (
-        select(Recommendation, Symbol.ticker)
+        select(Recommendation, Symbol.ticker, Symbol.name)
         .join(Symbol, Symbol.id == Recommendation.symbol_id)
         .where(Recommendation.recommendation_date == latest_date)
-        .order_by(Recommendation.conviction.desc().nullslast(), Symbol.ticker.asc())
     )
+
+    if q:
+        query = f"%{q.strip().upper()}%"
+        base_query = base_query.where(func.upper(Symbol.ticker).like(query) | func.upper(func.coalesce(Symbol.name, '')).like(query))
+
+    base_query = base_query.order_by(Recommendation.conviction.desc().nullslast(), Symbol.ticker.asc())
 
     total = db.scalar(select(func.count()).select_from(base_query.subquery())) or 0
     rows = db.execute(base_query.offset(offset).limit(limit)).all()
@@ -70,6 +76,7 @@ def top_picks(
     items = [
         RecommendationItem(
             symbol=ticker,
+            name=name,
             recommendation_date=rec.recommendation_date,
             action=rec.action.value,
             conviction=float(rec.conviction) if rec.conviction is not None else None,
@@ -77,7 +84,7 @@ def top_picks(
             horizon_days=rec.horizon_days,
             rationale=rec.rationale,
         )
-        for rec, ticker in rows
+        for rec, ticker, name in rows
     ]
 
     return TopPicksResponse(items=items, meta=PaginationMeta(page=page, size=size, total=total))
@@ -87,6 +94,7 @@ def top_picks(
 def rankings(
     page: int = Query(default=1, ge=1),
     size: int = Query(default=20, ge=1, le=100),
+    q: str | None = Query(default=None, min_length=1),
     db: Session = Depends(get_db),
 ) -> RankingsResponse:
     offset, limit = _pagination(page, size)
@@ -95,17 +103,22 @@ def rankings(
     if latest_date is None:
         return RankingsResponse(items=[], meta=PaginationMeta(page=page, size=size, total=0))
 
-    ranked_subquery = (
+    ranked_query = (
         select(
             Symbol.ticker.label('symbol'),
+            Symbol.name.label('name'),
             FactorScoreDaily.score_date.label('score_date'),
             func.avg(FactorScoreDaily.score).label('final_score'),
         )
         .join(Symbol, Symbol.id == FactorScoreDaily.symbol_id)
         .where(FactorScoreDaily.score_date == latest_date)
-        .group_by(Symbol.ticker, FactorScoreDaily.score_date)
-        .subquery()
     )
+
+    if q:
+        query = f"%{q.strip().upper()}%"
+        ranked_query = ranked_query.where(func.upper(Symbol.ticker).like(query) | func.upper(func.coalesce(Symbol.name, '')).like(query))
+
+    ranked_subquery = ranked_query.group_by(Symbol.ticker, Symbol.name, FactorScoreDaily.score_date).subquery()
 
     total = db.scalar(select(func.count()).select_from(ranked_subquery)) or 0
     rows = db.execute(
@@ -118,6 +131,7 @@ def rankings(
     items = [
         RankingItem(
             symbol=row.symbol,
+            name=row.name,
             score_date=row.score_date,
             final_score=float(row.final_score) if row.final_score is not None else 0.0,
         )
@@ -234,7 +248,7 @@ def recommendations_latest(
         return RecommendationsLatestResponse(as_of_date=None, items=[])
 
     rows = db.execute(
-        select(Recommendation, Symbol.ticker)
+        select(Recommendation, Symbol.ticker, Symbol.name)
         .join(Symbol, Symbol.id == Recommendation.symbol_id)
         .where(Recommendation.recommendation_date == latest_date)
         .order_by(Recommendation.conviction.desc().nullslast(), Symbol.ticker.asc())
@@ -244,6 +258,7 @@ def recommendations_latest(
     items = [
         RecommendationItem(
             symbol=ticker,
+            name=name,
             recommendation_date=rec.recommendation_date,
             action=rec.action.value,
             conviction=float(rec.conviction) if rec.conviction is not None else None,
@@ -251,7 +266,7 @@ def recommendations_latest(
             horizon_days=rec.horizon_days,
             rationale=rec.rationale,
         )
-        for rec, ticker in rows
+        for rec, ticker, name in rows
     ]
     return RecommendationsLatestResponse(as_of_date=latest_date, items=items)
 
