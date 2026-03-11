@@ -14,12 +14,12 @@ If you run `npx expo export --platform web`, it will fail because this repositor
 
 ## Deploying on Vercel
 
-This repository is a monorepo, so the Web app build must point at the Next.js app in `apps/web`.
-A root `vercel.json` is included to force the correct commands and avoid Expo defaults:
+This repository is a monorepo. For Vercel deployments, point the project at the Next.js app in `apps/web`:
 
-- install: `npm --prefix apps/web install`
-- build: `npm --prefix apps/web run build`
-- framework: `nextjs`
+1. Set **Root Directory** to `apps/web` (Project Settings → General).
+2. Set **Framework Preset** to **Next.js**.
+3. If you keep a root `vercel.json`, use monorepo-aware commands:
+   - install: `cd apps/web && npm install`
+   - build: `cd apps/web && npm run build`
 
-If your Vercel project still runs `npx expo export --platform web`, update the project
-Framework Preset to **Next.js** and clear any old custom Build Command.
+If your project still runs `npx expo export --platform web`, clear any stale custom build command and re-deploy.
