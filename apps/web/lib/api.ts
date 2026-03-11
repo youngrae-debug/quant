@@ -54,6 +54,21 @@ export type PaginatedRankings = {
   meta: PaginationMeta;
 };
 
+export type Turnaround = {
+  symbol: string;
+  name: string | null;
+  base_year: number;
+  next_year: number;
+  turnaround_year: number;
+  base_year_net_income: number;
+  turnaround_year_net_income: number;
+};
+
+export type PaginatedTurnarounds = {
+  items: Turnaround[];
+  meta: PaginationMeta;
+};
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 
 async function request<T>(path: string): Promise<T | null> {
@@ -92,4 +107,12 @@ export async function getStock(symbol: string): Promise<StockDetail | null> {
 export async function getStockHistory(symbol: string): Promise<PriceHistoryItem[]> {
   const data = await request<{ items: PriceHistoryItem[] }>(`/stocks/${symbol}/history?page=1&size=30`);
   return data?.items ?? [];
+}
+
+
+export async function getTurnarounds(page = 1, size = 50): Promise<PaginatedTurnarounds> {
+  const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+  const safeSize = Number.isFinite(size) && size > 0 ? Math.min(100, Math.floor(size)) : 50;
+  const data = await request<PaginatedTurnarounds>(`/turnarounds?page=${safePage}&size=${safeSize}`);
+  return data ?? { items: [], meta: { page: safePage, size: safeSize, total: 0 } };
 }
