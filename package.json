@@ -1,0 +1,16 @@
+{
+  "name": "quant",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm --workspace @quant/web run dev",
+    "build": "npm --workspace @quant/web run build",
+    "start": "npm --workspace @quant/web run start"
+  },
+  "dependencies": {
+    "next": "15.0.0"
+  }
+}
