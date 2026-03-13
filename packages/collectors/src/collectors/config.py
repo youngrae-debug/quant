@@ -1,4 +1,10 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+COLLECTORS_DIR = Path(__file__).resolve().parents[2]
+ENV_FILE = COLLECTORS_DIR / '.env'
 
 
 class CollectorSettings(BaseSettings):
@@ -14,7 +20,7 @@ class CollectorSettings(BaseSettings):
     request_timeout_seconds: int = 30
     rate_limit_sleep_seconds: float = 1.5
 
-    model_config = SettingsConfigDict(env_file='.env', env_prefix='', extra='ignore')
+    model_config = SettingsConfigDict(env_file=ENV_FILE, env_prefix='', extra='ignore')
 
 
 settings = CollectorSettings()

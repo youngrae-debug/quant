@@ -3,7 +3,9 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { SiteHeader } from '@/components/site-header';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+const defaultSiteUrl =
+  process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://www.wearethesecret.com';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? defaultSiteUrl;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

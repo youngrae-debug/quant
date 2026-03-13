@@ -2,6 +2,8 @@
 node_modules/
 .next/
 out/
+.npm-cache/
+tools/cloudflared/
 
 # Python
 __pycache__/
@@ -9,15 +11,19 @@ __pycache__/
 *.egg-info/
 .venv/
 venv/
+.pip-cache/
 
 # Env
 .env
 .env.local
+*.token
+secrets/
 
 # Tooling
 .DS_Store
 .idea/
 .vscode/
+.logs/
 .pytest_cache/
 .mypy_cache/
 coverage/

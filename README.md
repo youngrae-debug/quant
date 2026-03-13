@@ -2,6 +2,12 @@
 
 Production-oriented monorepo scaffold for an investment research platform.
 
+## Local Windows development
+
+For a Windows-first local setup that runs PostgreSQL in Docker and the API/Web servers directly on your PC, see [docs/local-development.md](docs/local-development.md).
+
+For exposing only the backend to Vercel through Cloudflare Tunnel, see [docs/cloudflare-tunnel.md](docs/cloudflare-tunnel.md).
+
 ## Included
 
 - `apps/web`: Next.js 15 + TypeScript + Tailwind frontend.
@@ -86,4 +92,3 @@ Each cron wrapper script:
 - emits structured JSON logs
 - is idempotent per day via done markers (`var/run/jobs/*.done`)
 - prevents overlapping runs via file lock (`flock`)
-

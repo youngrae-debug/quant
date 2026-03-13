@@ -4,7 +4,7 @@ from datetime import date
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import and_, func, select
+from sqlalchemy import Integer, and_, func, select
 from sqlalchemy.orm import Session
 
 from .config import settings
@@ -279,7 +279,7 @@ def turnarounds(
 ) -> TurnaroundResponse:
     offset, limit = _pagination(page, size)
 
-    year_col = func.extract('year', FilingFact.period_end_date).cast(int)
+    year_col = func.extract('year', FilingFact.period_end_date).cast(Integer)
     yearly = (
         select(
             FilingFact.symbol_id.label('symbol_id'),
