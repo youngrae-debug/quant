@@ -38,12 +38,12 @@ export default async function TurnaroundsPage({ searchParams }: Props) {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={`${row.symbol}-${row.base_year}-${row.turnaround_year}`} className="border-t border-zinc-800">
-                <td className="px-4 py-3"><Link className="text-white" href={`/stocks/${row.symbol}`}>{row.symbol}</Link></td>
-                <td className="px-4 py-3 text-zinc-300">{row.name ?? '-'}</td>
-                <td className="px-4 py-3 text-right text-rose-300">{fmt(row.base_year_net_income)}</td>
-                <td className="px-4 py-3 text-right text-white">{fmt(row.turnaround_year_net_income)}</td>
-                <td className="px-4 py-3 text-zinc-400">{row.base_year} → {row.next_year} → {row.turnaround_year}</td>
+              <tr key={`${row.symbol}-${row.base_year}-${row.turnaround_year}`} className="border-t border-zinc-800 transition hover:bg-zinc-900/50">
+                <td className="p-0"><Link className="block px-4 py-3 text-white" href={`/stocks/${row.symbol}`}>{row.symbol}</Link></td>
+                <td className="p-0"><Link className="block px-4 py-3 text-zinc-300" href={`/stocks/${row.symbol}`}>{row.name ?? '-'}</Link></td>
+                <td className="p-0 text-right"><Link className="block px-4 py-3 text-rose-300" href={`/stocks/${row.symbol}`}>{fmt(row.base_year_net_income)}</Link></td>
+                <td className="p-0 text-right"><Link className="block px-4 py-3 text-white" href={`/stocks/${row.symbol}`}>{fmt(row.turnaround_year_net_income)}</Link></td>
+                <td className="p-0"><Link className="block px-4 py-3 text-zinc-400" href={`/stocks/${row.symbol}`}>{row.base_year} → {row.next_year} → {row.turnaround_year}</Link></td>
               </tr>
             ))}
           </tbody>

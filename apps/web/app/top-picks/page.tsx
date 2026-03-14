@@ -36,14 +36,20 @@ export default async function TopPicksPage({ searchParams }: Props) {
 
       <div className="mt-8 grid gap-4">
         {picks.map((pick) => (
-          <article key={`${pick.symbol}-${pick.recommendation_date}`} className="rounded-xl border border-zinc-800 bg-zinc-950 p-5">
-            <div className="flex items-center justify-between">
-              <Link href={`/stocks/${pick.symbol}`} className="text-xl font-semibold text-white">{pick.symbol}</Link>
-              <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs uppercase text-white">{pick.action}</span>
-            </div>
-            {pick.name ? <p className="mt-1 text-sm text-zinc-400">{pick.name}</p> : null}
-            <p className="mt-3 text-zinc-300">{pick.rationale ?? 'No rationale provided.'}</p>
-          </article>
+          <Link
+            key={`${pick.symbol}-${pick.recommendation_date}`}
+            href={`/stocks/${pick.symbol}`}
+            className="block rounded-xl border border-zinc-800 bg-zinc-950 p-5 transition hover:border-zinc-600"
+          >
+            <article>
+              <div className="flex items-center justify-between">
+                <p className="text-xl font-semibold text-white">{pick.symbol}</p>
+                <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs uppercase text-white">{pick.action}</span>
+              </div>
+              {pick.name ? <p className="mt-1 text-sm text-zinc-400">{pick.name}</p> : null}
+              <p className="mt-3 text-zinc-300">{pick.rationale ?? 'No rationale provided.'}</p>
+            </article>
+          </Link>
         ))}
       </div>
       <div className="mt-8 flex items-center justify-between text-sm text-zinc-300">
