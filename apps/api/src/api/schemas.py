@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel, Field
 
@@ -95,3 +95,21 @@ class TurnaroundItem(BaseModel):
 class TurnaroundResponse(BaseModel):
     items: list[TurnaroundItem]
     meta: PaginationMeta
+
+
+class StockCommentItem(BaseModel):
+    id: int
+    symbol: str
+    nickname: str
+    content: str
+    created_at: datetime
+
+
+class StockCommentsResponse(BaseModel):
+    items: list[StockCommentItem]
+    meta: PaginationMeta
+
+
+class StockCommentCreateRequest(BaseModel):
+    nickname: str = Field(min_length=2, max_length=40)
+    content: str = Field(min_length=1, max_length=2000)
