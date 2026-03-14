@@ -23,6 +23,7 @@ from .schemas import (
     StockCommentItem,
     StockCommentsResponse,
     StockDetailResponse,
+    BuffettChecklistData,
     TopPicksResponse,
     TurnaroundItem,
     TurnaroundResponse,
@@ -41,6 +42,36 @@ app.add_middleware(
 
 def _pagination(page: int, size: int) -> tuple[int, int]:
     return (page - 1) * size, size
+
+
+def _to_float(value: object) -> float | None:
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _raw_number(raw_payload: dict | None, keys: list[str]) -> float | None:
+    if not raw_payload:
+        return None
+    for key in keys:
+        if key in raw_payload:
+            parsed = _to_float(raw_payload.get(key))
+            if parsed is not None:
+                return parsed
+    return None
+
+
+def _raw_text(raw_payload: dict | None, keys: list[str]) -> str | None:
+    if not raw_payload:
+        return None
+    for key in keys:
+        value = raw_payload.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return None
 
 
 @app.get('/health', tags=['health'], response_model=HealthResponse)
@@ -177,6 +208,55 @@ def stock_detail(symbol: str, db: Session = Depends(get_db)) -> StockDetailRespo
             rationale=latest_rec.rationale,
         )
 
+    latest_filing = db.execute(
+        select(FilingFact)
+        .where(FilingFact.symbol_id == stock.id)
+        .order_by(FilingFact.filing_date.desc(), FilingFact.created_at.desc())
+        .limit(1)
+    ).scalar_one_or_none()
+
+    financial_years_available = db.scalar(
+        select(func.count(func.distinct(func.extract('year', FilingFact.period_end_date))))
+        .where(FilingFact.symbol_id == stock.id)
+    ) or 0
+
+    raw = latest_filing.raw_payload if latest_filing and isinstance(latest_filing.raw_payload, dict) else None
+    revenue_ttm = float(latest_filing.revenue_ttm) if latest_filing and latest_filing.revenue_ttm is not None else None
+
+    ebit_ttm = _raw_number(raw, ['ebit_ttm', 'ebit', 'ebitda_ttm'])
+    free_cash_flow_ttm = _raw_number(raw, ['free_cash_flow_ttm', 'freeCashflow', 'fcf'])
+    roic_ttm = _raw_number(raw, ['roic_ttm', 'roic', 'returnOnInvestedCapital'])
+
+    total_debt = _raw_number(raw, ['total_debt', 'totalDebt'])
+    net_debt = _raw_number(raw, ['net_debt', 'netDebt'])
+    interest_expense_ttm = _raw_number(raw, ['interest_expense_ttm', 'interestExpense'])
+    interest_coverage = _raw_number(raw, ['interest_coverage', 'interestCoverage'])
+    if interest_coverage is None and ebit_ttm is not None and interest_expense_ttm not in (None, 0):
+        interest_coverage = ebit_ttm / interest_expense_ttm
+
+    debt_maturity_profile = _raw_text(raw, ['debt_maturity_profile', 'debtMaturityProfile'])
+
+    dividends_ttm = _raw_number(raw, ['dividends_ttm', 'dividendRate'])
+    buybacks_ttm = _raw_number(raw, ['buybacks_ttm', 'shareRepurchase'])
+    capex_ttm = _raw_number(raw, ['capex_ttm', 'capitalExpenditures'])
+
+    buffett_checklist = BuffettChecklistData(
+        latest_filing_date=latest_filing.filing_date if latest_filing else None,
+        financial_years_available=int(financial_years_available),
+        revenue_ttm=revenue_ttm,
+        ebit_ttm=ebit_ttm,
+        free_cash_flow_ttm=free_cash_flow_ttm,
+        roic_ttm=roic_ttm,
+        total_debt=total_debt,
+        net_debt=net_debt,
+        interest_expense_ttm=interest_expense_ttm,
+        interest_coverage=interest_coverage,
+        debt_maturity_profile=debt_maturity_profile,
+        dividends_ttm=dividends_ttm,
+        buybacks_ttm=buybacks_ttm,
+        capex_ttm=capex_ttm,
+    )
+
     return StockDetailResponse(
         symbol=ticker,
         name=stock.name,
@@ -188,6 +268,7 @@ def stock_detail(symbol: str, db: Session = Depends(get_db)) -> StockDetailRespo
         latest_close=float(latest_price.close) if latest_price and latest_price.close is not None else None,
         latest_price_date=latest_price.price_date if latest_price else None,
         latest_recommendation=recommendation,
+        buffett_checklist=buffett_checklist,
     )
 
 

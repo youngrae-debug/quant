@@ -521,6 +521,17 @@ def sync_yfinance_symbol_info(max_symbols: int = 500) -> int:
                             'fetched_at': datetime.now(UTC).isoformat(),
                             'sector': sector,
                             'industry': industry,
+                            'ebitda_ttm': info.get('ebitda'),
+                            'freeCashflow': info.get('freeCashflow'),
+                            'roic': info.get('returnOnInvestedCapital'),
+                            'totalDebt': info.get('totalDebt'),
+                            'netDebt': info.get('netDebt'),
+                            'interestExpense': info.get('interestExpense'),
+                            'interestCoverage': info.get('interestCoverage'),
+                            'debtMaturityProfile': info.get('debtMaturityProfile'),
+                            'dividends_ttm': info.get('dividendRate'),
+                            'shareRepurchase': info.get('shareRepurchase'),
+                            'capitalExpenditures': info.get('capitalExpenditures'),
                         })
                         conn.execute(
                             upsert_filing_sql,
