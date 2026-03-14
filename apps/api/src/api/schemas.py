@@ -38,6 +38,24 @@ class RankingItem(BaseModel):
     final_score: float
 
 
+
+
+class BuffettChecklistData(BaseModel):
+    latest_filing_date: date | None
+    financial_years_available: int
+    revenue_ttm: float | None
+    ebit_ttm: float | None
+    free_cash_flow_ttm: float | None
+    roic_ttm: float | None
+    total_debt: float | None
+    net_debt: float | None
+    interest_expense_ttm: float | None
+    interest_coverage: float | None
+    debt_maturity_profile: str | None
+    dividends_ttm: float | None
+    buybacks_ttm: float | None
+    capex_ttm: float | None
+
 class StockDetailResponse(BaseModel):
     symbol: str
     name: str | None
@@ -49,6 +67,7 @@ class StockDetailResponse(BaseModel):
     latest_close: float | None
     latest_price_date: date | None
     latest_recommendation: RecommendationItem | None
+    buffett_checklist: BuffettChecklistData
 
 
 class PriceHistoryItem(BaseModel):
