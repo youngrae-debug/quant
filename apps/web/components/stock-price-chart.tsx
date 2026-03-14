@@ -70,7 +70,7 @@ export function StockPriceChart({ history }: Props) {
       <div className="mt-4 rounded-lg border border-zinc-800 bg-black p-3">
         {chartData.points ? (
           <>
-            <svg viewBox="0 0 100 100" className="h-52 w-full">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="block h-52 w-full">
               <polyline
                 fill="none"
                 stroke="currentColor"

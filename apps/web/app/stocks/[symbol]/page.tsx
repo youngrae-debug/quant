@@ -214,8 +214,8 @@ export default async function StockDetailPage({ params }: Props) {
         {dcfScenarios.length === 0 ? (
           <p className="mt-4 text-sm text-zinc-400">Insufficient price data for DCF range.</p>
         ) : (
-          <div className="mt-4 overflow-hidden rounded-lg border border-zinc-800">
-            <table className="w-full text-sm">
+          <div className="mt-4 overflow-x-auto rounded-lg border border-zinc-800">
+            <table className="min-w-[720px] w-full text-sm">
               <thead className="bg-zinc-950 text-zinc-300">
                 <tr>
                   <th className="px-4 py-3 text-left">Growth</th>
@@ -243,8 +243,8 @@ export default async function StockDetailPage({ params }: Props) {
 
       <section className="mt-8">
         <h2 className="text-xl font-semibold">Recent Price History</h2>
-        <div className="mt-4 overflow-hidden rounded-xl border border-zinc-800">
-          <table className="w-full text-sm">
+        <div className="mt-4 overflow-x-auto rounded-xl border border-zinc-800">
+          <table className="min-w-[720px] w-full text-sm">
             <thead className="bg-zinc-950 text-zinc-300">
               <tr>
                 <th className="px-4 py-3 text-left">Date</th>
