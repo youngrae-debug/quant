@@ -71,6 +71,19 @@ export type PaginatedTurnarounds = {
   meta: PaginationMeta;
 };
 
+export type StockComment = {
+  id: number;
+  symbol: string;
+  nickname: string;
+  content: string;
+  created_at: string;
+};
+
+export type PaginatedStockComments = {
+  items: StockComment[];
+  meta: PaginationMeta;
+};
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 
 async function request<T>(path: string): Promise<T | null> {
@@ -108,8 +121,9 @@ export async function getStock(symbol: string): Promise<StockDetail | null> {
   return data;
 }
 
-export async function getStockHistory(symbol: string): Promise<PriceHistoryItem[]> {
-  const data = await request<{ items: PriceHistoryItem[] }>(`/stocks/${symbol}/history?page=1&size=30`);
+export async function getStockHistory(symbol: string, size = 180): Promise<PriceHistoryItem[]> {
+  const safeSize = Number.isFinite(size) && size > 0 ? Math.min(500, Math.floor(size)) : 180;
+  const data = await request<{ items: PriceHistoryItem[] }>(`/stocks/${symbol}/history?page=1&size=${safeSize}`);
   return data?.items ?? [];
 }
 
@@ -119,4 +133,25 @@ export async function getTurnarounds(page = 1, size = 50): Promise<PaginatedTurn
   const safeSize = Number.isFinite(size) && size > 0 ? Math.min(100, Math.floor(size)) : 50;
   const data = await request<PaginatedTurnarounds>(`/turnarounds?page=${safePage}&size=${safeSize}`);
   return data ?? { items: [], meta: { page: safePage, size: safeSize, total: 0 } };
+}
+
+export async function getStockComments(symbol: string, page = 1, size = 20): Promise<PaginatedStockComments> {
+  const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+  const safeSize = Number.isFinite(size) && size > 0 ? Math.min(100, Math.floor(size)) : 20;
+  const data = await request<PaginatedStockComments>(`/stocks/${symbol}/comments?page=${safePage}&size=${safeSize}`);
+  return data ?? { items: [], meta: { page: safePage, size: safeSize, total: 0 } };
+}
+
+export async function postStockComment(symbol: string, nickname: string, content: string): Promise<StockComment | null> {
+  try {
+    const res = await fetch(`${API_BASE}/stocks/${symbol}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname, content }),
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as StockComment;
+  } catch {
+    return null;
+  }
 }

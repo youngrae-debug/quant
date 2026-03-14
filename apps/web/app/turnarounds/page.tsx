@@ -23,39 +23,47 @@ export default async function TurnaroundsPage({ searchParams }: Props) {
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
       <h1 className="text-3xl font-semibold">Turnaround Candidates</h1>
-      <p className="mt-2 text-slate-400">Companies shifting from loss this year to profitability in two years. Total: {total.toLocaleString()}</p>
+      <p className="mt-2 text-zinc-400">Companies shifting from losses to profitability within a two-year window. Total: {total.toLocaleString()}</p>
 
-      <div className="mt-6 overflow-hidden rounded-xl border border-slate-800">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-900 text-slate-300">
-            <tr>
-              <th className="px-4 py-3 text-left">Symbol</th>
-              <th className="px-4 py-3 text-left">Company</th>
-              <th className="px-4 py-3 text-right">Base Year NI</th>
-              <th className="px-4 py-3 text-right">Turnaround Year NI</th>
-              <th className="px-4 py-3 text-left">Window</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={`${row.symbol}-${row.base_year}-${row.turnaround_year}`} className="border-t border-slate-800">
-                <td className="px-4 py-3"><Link className="text-emerald-300" href={`/stocks/${row.symbol}`}>{row.symbol}</Link></td>
-                <td className="px-4 py-3 text-slate-300">{row.name ?? '-'}</td>
-                <td className="px-4 py-3 text-right text-rose-300">{fmt(row.base_year_net_income)}</td>
-                <td className="px-4 py-3 text-right text-emerald-300">{fmt(row.turnaround_year_net_income)}</td>
-                <td className="px-4 py-3 text-slate-400">{row.base_year} → {row.next_year} → {row.turnaround_year}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mt-8 grid gap-4">
+        {rows.map((row) => (
+          <Link
+            key={`${row.symbol}-${row.base_year}-${row.turnaround_year}`}
+            href={`/stocks/${row.symbol}`}
+            className="block rounded-xl border border-zinc-800 bg-zinc-950 p-5 transition hover:border-zinc-600"
+          >
+            <article>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xl font-semibold text-white">{row.symbol}</p>
+                  <p className="mt-1 text-sm text-zinc-400">{row.name ?? '-'}</p>
+                </div>
+                <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs uppercase text-zinc-300">
+                  {row.base_year} → {row.next_year} → {row.turnaround_year}
+                </span>
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-lg border border-zinc-800 bg-black p-3">
+                  <p className="text-xs text-zinc-500">Base Year Net Income</p>
+                  <p className="mt-1 text-lg font-medium text-rose-300">{fmt(row.base_year_net_income)}</p>
+                </div>
+                <div className="rounded-lg border border-zinc-800 bg-black p-3">
+                  <p className="text-xs text-zinc-500">Turnaround Year Net Income</p>
+                  <p className="mt-1 text-lg font-medium text-white">{fmt(row.turnaround_year_net_income)}</p>
+                </div>
+              </div>
+            </article>
+          </Link>
+        ))}
       </div>
 
-      <div className="mt-8 flex items-center justify-between text-sm text-slate-300">
-        <Link href={`/turnarounds?page=${prevPage}&size=${size}`} className={`rounded border px-3 py-2 ${page <= 1 ? 'pointer-events-none border-slate-800 text-slate-600' : 'border-slate-700 hover:border-emerald-400'}`}>
+      <div className="mt-8 flex items-center justify-between text-sm text-zinc-300">
+        <Link href={`/turnarounds?page=${prevPage}&size=${size}`} className={`rounded border px-3 py-2 ${page <= 1 ? 'pointer-events-none border-zinc-800 text-zinc-500' : 'border-zinc-700 hover:border-zinc-600'}`}>
           Previous
         </Link>
         <p>Page {page} / {totalPages}</p>
-        <Link href={`/turnarounds?page=${nextPage}&size=${size}`} className={`rounded border px-3 py-2 ${page >= totalPages ? 'pointer-events-none border-slate-800 text-slate-600' : 'border-slate-700 hover:border-emerald-400'}`}>
+        <Link href={`/turnarounds?page=${nextPage}&size=${size}`} className={`rounded border px-3 py-2 ${page >= totalPages ? 'pointer-events-none border-zinc-800 text-zinc-500' : 'border-zinc-700 hover:border-zinc-600'}`}>
           Next
         </Link>
       </div>

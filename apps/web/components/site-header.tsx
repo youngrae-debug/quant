@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 const nav = [
-  { href: '/', label: 'Home' },
+  { href: '/', label: 'Research Home' },
   { href: '/top-picks', label: 'Top Picks' },
   { href: '/rankings', label: 'Rankings' },
   { href: '/turnarounds', label: 'Turnarounds' },
@@ -11,21 +11,26 @@ const nav = [
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
-        <Link href="/" className="text-sm font-semibold tracking-[0.2em] text-emerald-300">
-          WATS
-        </Link>
-        <div className="flex items-center gap-4 rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-2">
-          <nav className="flex gap-5 text-sm text-slate-300">
-            {nav.map((item) => (
-              <Link key={item.href} href={item.href} className="transition hover:text-white">
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+    <header className="sticky top-0 z-20 border-b border-zinc-800 bg-black/95 backdrop-blur">
+      <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6 sm:py-4">
+        <div className="flex items-center justify-between gap-3">
+          <Link href="/" className="text-xs font-semibold tracking-[0.16em] text-white sm:text-sm">
+            WATS RESEARCH
+          </Link>
           <ThemeToggle />
         </div>
+
+        <nav className="mt-3 flex gap-1 overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950/80 p-1.5 text-sm text-zinc-300 md:mt-4 md:justify-center md:gap-2 md:p-2">
+          {nav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="whitespace-nowrap rounded-md px-2.5 py-1.5 transition hover:bg-white hover:text-black md:px-3"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
       </div>
     </header>
   );

@@ -21,7 +21,7 @@ export default async function RankingsPage({ searchParams }: Props) {
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
       <h1 className="text-3xl font-semibold">Rankings</h1>
-      <p className="mt-2 text-slate-400">Latest ranked universe. Total: {total.toLocaleString()}</p>
+      <p className="mt-2 text-zinc-400">Latest ranked universe. Total: {total.toLocaleString()}</p>
 
       <form className="mt-6 flex gap-3" action="/rankings" method="get">
         <input type="hidden" name="size" value={size} />
@@ -29,37 +29,38 @@ export default async function RankingsPage({ searchParams }: Props) {
           name="q"
           defaultValue={q}
           placeholder="Search by ticker or company"
-          className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500"
+          className="w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white placeholder:text-zinc-500"
         />
-        <button className="rounded border border-emerald-400 px-4 py-2 text-sm text-emerald-300 hover:bg-emerald-400/10">Search</button>
+        <button className="rounded border border-zinc-600 px-4 py-2 text-sm text-white hover:bg-zinc-900">Search</button>
       </form>
 
-      <div className="mt-6 overflow-hidden rounded-xl border border-slate-800">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-900 text-slate-300">
-            <tr>
-              <th className="px-4 py-3 text-left">Symbol</th>
-              <th className="px-4 py-3 text-left">Company</th>
-              <th className="px-4 py-3 text-left">Date</th>
-              <th className="px-4 py-3 text-right">Final Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={`${row.symbol}-${row.score_date}`} className="border-t border-slate-800">
-                <td className="px-4 py-3"><Link className="text-emerald-300" href={`/stocks/${row.symbol}`}>{row.symbol}</Link></td>
-                <td className="px-4 py-3 text-slate-400">{row.name ?? '-'}</td>
-                <td className="px-4 py-3 text-slate-400">{row.score_date}</td>
-                <td className="px-4 py-3 text-right font-medium">{row.final_score.toFixed(2)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mt-8 grid gap-4">
+        {rows.map((row) => (
+          <Link
+            key={`${row.symbol}-${row.score_date}`}
+            href={`/stocks/${row.symbol}`}
+            className="block rounded-xl border border-zinc-800 bg-zinc-950 p-5 transition hover:border-zinc-600"
+          >
+            <article>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xl font-semibold text-white">{row.symbol}</p>
+                  <p className="mt-1 text-sm text-zinc-400">{row.name ?? '-'}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Final Score</p>
+                  <p className="mt-1 text-xl font-semibold text-white">{row.final_score.toFixed(2)}</p>
+                </div>
+              </div>
+              <p className="mt-3 text-sm text-zinc-400">Score Date: {row.score_date}</p>
+            </article>
+          </Link>
+        ))}
       </div>
-      <div className="mt-8 flex items-center justify-between text-sm text-slate-300">
+      <div className="mt-8 flex items-center justify-between text-sm text-zinc-300">
         <Link
           href={`/rankings?page=${prevPage}&size=${size}${qs}`}
-          className={`rounded border px-3 py-2 ${page <= 1 ? 'pointer-events-none border-slate-800 text-slate-600' : 'border-slate-700 hover:border-emerald-400'}`}
+          className={`rounded border px-3 py-2 ${page <= 1 ? 'pointer-events-none border-zinc-800 text-zinc-500' : 'border-zinc-700 hover:border-zinc-600'}`}
         >
           Previous
         </Link>
@@ -68,7 +69,7 @@ export default async function RankingsPage({ searchParams }: Props) {
         </p>
         <Link
           href={`/rankings?page=${nextPage}&size=${size}${qs}`}
-          className={`rounded border px-3 py-2 ${page >= totalPages ? 'pointer-events-none border-slate-800 text-slate-600' : 'border-slate-700 hover:border-emerald-400'}`}
+          className={`rounded border px-3 py-2 ${page >= totalPages ? 'pointer-events-none border-zinc-800 text-zinc-500' : 'border-zinc-700 hover:border-zinc-600'}`}
         >
           Next
         </Link>
