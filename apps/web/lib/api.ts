@@ -17,6 +17,23 @@ export type Ranking = {
   final_score: number;
 };
 
+export type BuffettChecklist = {
+  latest_filing_date: string | null;
+  financial_years_available: number;
+  revenue_ttm: number | null;
+  ebit_ttm: number | null;
+  free_cash_flow_ttm: number | null;
+  roic_ttm: number | null;
+  total_debt: number | null;
+  net_debt: number | null;
+  interest_expense_ttm: number | null;
+  interest_coverage: number | null;
+  debt_maturity_profile: string | null;
+  dividends_ttm: number | null;
+  buybacks_ttm: number | null;
+  capex_ttm: number | null;
+};
+
 export type StockDetail = {
   symbol: string;
   name: string | null;
@@ -28,6 +45,7 @@ export type StockDetail = {
   latest_close: number | null;
   latest_price_date: string | null;
   latest_recommendation: Recommendation | null;
+  buffett_checklist: BuffettChecklist;
 };
 
 export type PriceHistoryItem = {
