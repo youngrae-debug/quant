@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 
 import { getStock, getStockHistory } from '@/lib/api';
+import { StockPriceChart } from '@/components/stock-price-chart';
+import { StockCommunity } from '@/components/stock-community';
 
 type Props = { params: Promise<{ symbol: string }> };
 
@@ -97,7 +99,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function StockDetailPage({ params }: Props) {
   const { symbol } = await params;
   const stock = await getStock(symbol);
-  const history = await getStockHistory(symbol);
+  const history = await getStockHistory(symbol, 365);
 
   const latest = history[0] ?? null;
   const prev = history[1] ?? null;
@@ -139,6 +141,8 @@ export default async function StockDetailPage({ params }: Props) {
           <p className="mt-2 text-lg font-medium">{stock?.latest_recommendation?.action ?? 'N/A'}</p>
         </div>
       </section>
+
+      <StockPriceChart history={history} />
 
       <section className="mt-10 rounded-xl border border-zinc-800 bg-zinc-950 p-6">
         <h2 className="text-xl font-semibold">Financial Data Snapshot</h2>
@@ -264,6 +268,8 @@ export default async function StockDetailPage({ params }: Props) {
           </table>
         </div>
       </section>
+
+      <StockCommunity symbol={symbol.toUpperCase()} />
     </main>
   );
 }

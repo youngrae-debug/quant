@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from datetime import date
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Body, Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import Integer, and_, func, select
 from sqlalchemy.orm import Session
 
 from .config import settings
 from .db import get_db
-from .models import FactorScoreDaily, FilingFact, PriceDaily, Recommendation, Symbol
+from .models import FactorScoreDaily, FilingFact, PriceDaily, Recommendation, StockComment, Symbol
 from .schemas import (
     HealthResponse,
     PaginationMeta,
@@ -19,6 +19,9 @@ from .schemas import (
     RankingsResponse,
     RecommendationItem,
     RecommendationsLatestResponse,
+    StockCommentCreateRequest,
+    StockCommentItem,
+    StockCommentsResponse,
     StockDetailResponse,
     TopPicksResponse,
     TurnaroundItem,
@@ -352,3 +355,65 @@ def turnarounds(
 
     return TurnaroundResponse(items=items, meta=PaginationMeta(page=page, size=size, total=total))
 
+
+
+@app.get('/stocks/{symbol}/comments', tags=['stocks'], response_model=StockCommentsResponse)
+def stock_comments(
+    symbol: str,
+    page: int = Query(default=1, ge=1),
+    size: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+) -> StockCommentsResponse:
+    ticker = symbol.upper()
+    stock = db.scalar(select(Symbol).where(Symbol.ticker == ticker))
+    if stock is None:
+        raise HTTPException(status_code=404, detail=f'Symbol not found: {ticker}')
+
+    offset, limit = _pagination(page, size)
+    base_query = select(StockComment).where(StockComment.symbol_id == stock.id)
+    total = db.scalar(select(func.count()).select_from(base_query.subquery())) or 0
+    rows = db.execute(
+        base_query.order_by(StockComment.created_at.desc()).offset(offset).limit(limit)
+    ).scalars().all()
+
+    items = [
+        StockCommentItem(
+            id=row.id,
+            symbol=ticker,
+            nickname=row.nickname,
+            content=row.content,
+            created_at=row.created_at,
+        )
+        for row in rows
+    ]
+
+    return StockCommentsResponse(items=items, meta=PaginationMeta(page=page, size=size, total=total))
+
+
+@app.post('/stocks/{symbol}/comments', tags=['stocks'], response_model=StockCommentItem, status_code=201)
+def create_stock_comment(
+    symbol: str,
+    payload: StockCommentCreateRequest = Body(...),
+    db: Session = Depends(get_db),
+) -> StockCommentItem:
+    ticker = symbol.upper()
+    stock = db.scalar(select(Symbol).where(Symbol.ticker == ticker))
+    if stock is None:
+        raise HTTPException(status_code=404, detail=f'Symbol not found: {ticker}')
+
+    comment = StockComment(
+        symbol_id=stock.id,
+        nickname=payload.nickname.strip(),
+        content=payload.content.strip(),
+    )
+    db.add(comment)
+    db.commit()
+    db.refresh(comment)
+
+    return StockCommentItem(
+        id=comment.id,
+        symbol=ticker,
+        nickname=comment.nickname,
+        content=comment.content,
+        created_at=comment.created_at,
+    )

@@ -46,11 +46,11 @@ export default async function RankingsPage({ searchParams }: Props) {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={`${row.symbol}-${row.score_date}`} className="border-t border-zinc-800">
-                <td className="px-4 py-3"><Link className="text-white" href={`/stocks/${row.symbol}`}>{row.symbol}</Link></td>
-                <td className="px-4 py-3 text-zinc-400">{row.name ?? '-'}</td>
-                <td className="px-4 py-3 text-zinc-400">{row.score_date}</td>
-                <td className="px-4 py-3 text-right font-medium">{row.final_score.toFixed(2)}</td>
+              <tr key={`${row.symbol}-${row.score_date}`} className="border-t border-zinc-800 transition hover:bg-zinc-900/50">
+                <td className="p-0"><Link className="block px-4 py-3 text-white" href={`/stocks/${row.symbol}`}>{row.symbol}</Link></td>
+                <td className="p-0"><Link className="block px-4 py-3 text-zinc-400" href={`/stocks/${row.symbol}`}>{row.name ?? '-'}</Link></td>
+                <td className="p-0"><Link className="block px-4 py-3 text-zinc-400" href={`/stocks/${row.symbol}`}>{row.score_date}</Link></td>
+                <td className="p-0 text-right"><Link className="block px-4 py-3 font-medium" href={`/stocks/${row.symbol}`}>{row.final_score.toFixed(2)}</Link></td>
               </tr>
             ))}
           </tbody>
