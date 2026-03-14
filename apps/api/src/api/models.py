@@ -36,6 +36,7 @@ class Symbol(Base):
     fundamentals: Mapped[list['FundamentalsSnapshotDaily']] = relationship(back_populates='symbol')
     factor_scores: Mapped[list['FactorScoreDaily']] = relationship(back_populates='symbol')
     recommendations: Mapped[list['Recommendation']] = relationship(back_populates='symbol')
+    stock_comments: Mapped[list['StockComment']] = relationship(back_populates='symbol')
     filing_facts: Mapped[list['FilingFact']] = relationship(back_populates='symbol')
 
 
@@ -152,3 +153,18 @@ class Recommendation(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     symbol: Mapped['Symbol'] = relationship(back_populates='recommendations')
+
+
+class StockComment(Base):
+    __tablename__ = 'stock_comments'
+    __table_args__ = (
+        Index('ix_stock_comments_symbol_created', 'symbol_id', 'created_at'),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    symbol_id: Mapped[int] = mapped_column(ForeignKey('symbols.id', ondelete='CASCADE'), nullable=False)
+    nickname: Mapped[str] = mapped_column(String(40), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    symbol: Mapped['Symbol'] = relationship(back_populates='stock_comments')
