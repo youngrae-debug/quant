@@ -26,10 +26,10 @@ export default function MethodologyPage() {
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
       <h1 className="text-3xl font-semibold">About Methodology</h1>
-      <p className="mt-4 text-slate-300">
+      <p className="mt-4 text-white">
         Trust comes from transparency. Our process is point-in-time by design: features are computed only from information available on each observation date.
       </p>
-      <div className="mt-8 space-y-6 text-slate-300">
+      <div className="mt-8 space-y-6 text-white">
         <section>
           <h2 className="text-xl font-medium text-white">1) Data Integrity</h2>
           <p className="mt-2">We normalize SEC and market data feeds, preserve filing timestamps, and materialize daily snapshots to prevent look-ahead bias.</p>
