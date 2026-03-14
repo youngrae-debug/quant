@@ -206,6 +206,38 @@ export default async function StockDetailPage({ params }: Props) {
       </section>
 
 
+
+      <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950 p-6">
+        <h2 className="text-xl font-semibold">Buffett-style Company Analysis</h2>
+        <p className="mt-2 text-sm text-zinc-400">
+          Long-term value framework inspired by Buffett: understand the business, verify durability, and demand a margin of safety.
+        </p>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="rounded-lg border border-zinc-800 bg-black p-4">
+            <h3 className="text-sm font-semibold text-white">Core principles</h3>
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-zinc-300">
+              <li>Circle of competence: only invest when the business model is understandable.</li>
+              <li>Economic moat: brand, cost edge, switching costs, or network effects.</li>
+              <li>Capital allocation quality: reinvestment, buybacks, and balance-sheet discipline.</li>
+              <li>Margin of safety: compare intrinsic value range with current market price.</li>
+            </ul>
+          </div>
+          <div className="rounded-lg border border-zinc-800 bg-black p-4">
+            <h3 className="text-sm font-semibold text-white">Data checklist for full analysis</h3>
+            <ul className="mt-3 space-y-2 text-sm text-zinc-300">
+              <li>✅ Business profile (name/sector/industry): <span className="font-medium text-white">{stock?.name && stock?.sector && stock?.industry ? 'Available' : 'Missing'}</span></li>
+              <li>⚠️ 5–10Y financial statements (revenue, EBIT, FCF, ROIC): <span className="font-medium text-white">Needed</span></li>
+              <li>⚠️ Debt quality (net debt, interest coverage, maturity): <span className="font-medium text-white">Needed</span></li>
+              <li>⚠️ Management capital allocation history: <span className="font-medium text-white">Needed</span></li>
+              <li>✅ Recent market behavior (close trend): <span className="font-medium text-white">{latest?.close != null ? 'Available' : 'Missing'}</span></li>
+              <li>✅ Recommendation signal (current model action): <span className="font-medium text-white">{stock?.latest_recommendation?.action ? 'Available' : 'Missing'}</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+
       <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950 p-6">
         <h2 className="text-xl font-semibold">DCF Sensitivity (Scenario Range)</h2>
         <p className="mt-2 text-sm text-zinc-400">
