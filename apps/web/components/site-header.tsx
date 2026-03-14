@@ -2,11 +2,11 @@ import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 const nav = [
-  { href: '/', label: '리서치 홈' },
-  { href: '/top-picks', label: '모델 추천' },
-  { href: '/rankings', label: '종목 랭킹' },
-  { href: '/turnarounds', label: '턴어라운드' },
-  { href: '/about-methodology', label: '방법론' },
+  { href: '/', label: 'Research Home' },
+  { href: '/top-picks', label: 'Top Picks' },
+  { href: '/rankings', label: 'Rankings' },
+  { href: '/turnarounds', label: 'Turnarounds' },
+  { href: '/about-methodology', label: 'Methodology' },
 ];
 
 export function SiteHeader() {

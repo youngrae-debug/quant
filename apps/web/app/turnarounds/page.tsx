@@ -23,31 +23,39 @@ export default async function TurnaroundsPage({ searchParams }: Props) {
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
       <h1 className="text-3xl font-semibold">Turnaround Candidates</h1>
-      <p className="mt-2 text-zinc-400">Companies shifting from loss this year to profitability in two years. Total: {total.toLocaleString()}</p>
+      <p className="mt-2 text-zinc-400">Companies shifting from losses to profitability within a two-year window. Total: {total.toLocaleString()}</p>
 
-      <div className="mt-6 overflow-hidden rounded-xl border border-zinc-800">
-        <table className="w-full text-sm">
-          <thead className="bg-zinc-950 text-zinc-300">
-            <tr>
-              <th className="px-4 py-3 text-left">Symbol</th>
-              <th className="px-4 py-3 text-left">Company</th>
-              <th className="px-4 py-3 text-right">Base Year NI</th>
-              <th className="px-4 py-3 text-right">Turnaround Year NI</th>
-              <th className="px-4 py-3 text-left">Window</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={`${row.symbol}-${row.base_year}-${row.turnaround_year}`} className="border-t border-zinc-800 transition hover:bg-zinc-900/50">
-                <td className="p-0"><Link className="block px-4 py-3 text-white" href={`/stocks/${row.symbol}`}>{row.symbol}</Link></td>
-                <td className="p-0"><Link className="block px-4 py-3 text-zinc-300" href={`/stocks/${row.symbol}`}>{row.name ?? '-'}</Link></td>
-                <td className="p-0 text-right"><Link className="block px-4 py-3 text-rose-300" href={`/stocks/${row.symbol}`}>{fmt(row.base_year_net_income)}</Link></td>
-                <td className="p-0 text-right"><Link className="block px-4 py-3 text-white" href={`/stocks/${row.symbol}`}>{fmt(row.turnaround_year_net_income)}</Link></td>
-                <td className="p-0"><Link className="block px-4 py-3 text-zinc-400" href={`/stocks/${row.symbol}`}>{row.base_year} → {row.next_year} → {row.turnaround_year}</Link></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mt-8 grid gap-4">
+        {rows.map((row) => (
+          <Link
+            key={`${row.symbol}-${row.base_year}-${row.turnaround_year}`}
+            href={`/stocks/${row.symbol}`}
+            className="block rounded-xl border border-zinc-800 bg-zinc-950 p-5 transition hover:border-zinc-600"
+          >
+            <article>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xl font-semibold text-white">{row.symbol}</p>
+                  <p className="mt-1 text-sm text-zinc-400">{row.name ?? '-'}</p>
+                </div>
+                <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs uppercase text-zinc-300">
+                  {row.base_year} → {row.next_year} → {row.turnaround_year}
+                </span>
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-lg border border-zinc-800 bg-black p-3">
+                  <p className="text-xs text-zinc-500">Base Year Net Income</p>
+                  <p className="mt-1 text-lg font-medium text-rose-300">{fmt(row.base_year_net_income)}</p>
+                </div>
+                <div className="rounded-lg border border-zinc-800 bg-black p-3">
+                  <p className="text-xs text-zinc-500">Turnaround Year Net Income</p>
+                  <p className="mt-1 text-lg font-medium text-white">{fmt(row.turnaround_year_net_income)}</p>
+                </div>
+              </div>
+            </article>
+          </Link>
+        ))}
       </div>
 
       <div className="mt-8 flex items-center justify-between text-sm text-zinc-300">

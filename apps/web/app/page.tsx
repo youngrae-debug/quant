@@ -3,19 +3,19 @@ import { getHealth } from '@/lib/api';
 
 const highlights = [
   {
-    title: '멀티팩터 스코어링 모델',
+    title: 'Multi-Factor Scoring Model',
     description:
-      '퀄리티, 밸류, 성장, 수익성 지표를 표준화해 단일 점수로 통합하고 섹터/규모 편향을 최소화합니다.',
+      'Quality, value, growth, and profitability metrics are standardized into a unified score with reduced sector/size bias.',
   },
   {
-    title: '모멘텀·실적 리비전 모니터링',
+    title: 'Momentum & Earnings Revision Monitoring',
     description:
-      '가격 추세, 거래 강도, 이익추정치 변화를 함께 추적해 컨센서스 변화와 펀더멘털 모멘텀을 점검합니다.',
+      'Price trend, trading strength, and earnings estimate revisions are tracked together to capture expectation shifts.',
   },
   {
-    title: '리스크 기반 후보군 관리',
+    title: 'Risk-Aware Candidate Management',
     description:
-      '변동성, 유동성, 낙폭 지표를 반영해 리스크 대비 기대수익 관점에서 우선 검토 종목을 제시합니다.',
+      'Volatility, liquidity, and drawdown signals are incorporated to prioritize ideas on a risk-adjusted basis.',
   },
 ];
 
@@ -27,11 +27,11 @@ export default async function HomePage() {
       <section className="rounded-2xl border border-zinc-700 bg-black p-5 sm:p-7 md:p-10">
         <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-400 sm:text-xs">Institutional Equity Research Console</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:mt-4 sm:text-4xl md:text-5xl">
-          기관 수준의 주식 리서치를 한 화면에서.
+          Institutional-grade stock research in one place.
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-relaxed text-zinc-300 sm:mt-5 sm:text-base">
-          WATS는 시점 일치(point-in-time) 데이터를 기반으로 종목 랭킹, 추천, 턴어라운드 후보를 제공합니다.
-          모든 결과는 팩터 근거와 함께 제시되어 포트폴리오 의사결정의 투명성과 재현성을 높입니다.
+          WATS delivers rankings, model recommendations, and turnaround candidates from point-in-time data.
+          Every output includes factor-level rationale to improve transparency and repeatability in portfolio decisions.
         </p>
 
         <div className="mt-6 grid gap-3 sm:mt-8 sm:flex sm:flex-wrap">
@@ -39,13 +39,13 @@ export default async function HomePage() {
             href="/top-picks"
             className="w-full rounded-lg bg-white px-5 py-2.5 text-center text-sm font-semibold text-black transition hover:bg-zinc-200 sm:w-auto"
           >
-            모델 추천 종목 보기
+            View Top Picks
           </Link>
           <Link
             href="/about-methodology"
             className="w-full rounded-lg border border-zinc-600 px-5 py-2.5 text-center text-sm font-medium text-zinc-100 transition hover:bg-zinc-900 sm:w-auto"
           >
-            리서치 방법론
+            Research Methodology
           </Link>
         </div>
       </section>
@@ -63,7 +63,7 @@ export default async function HomePage() {
         <aside className="rounded-xl border border-zinc-800 bg-zinc-950 p-5">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">Research System Status</p>
           <p className="mt-2 text-xl font-semibold text-white">{health?.status ?? 'unavailable'}</p>
-          <p className="mt-2 text-sm text-zinc-400">데이터 수집·스코어링·추천 파이프라인의 현재 운영 상태를 나타냅니다.</p>
+          <p className="mt-2 text-sm text-zinc-400">Shows the current state of ingestion, scoring, and recommendation pipelines.</p>
         </aside>
       </section>
     </main>

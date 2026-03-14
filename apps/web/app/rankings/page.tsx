@@ -34,27 +34,28 @@ export default async function RankingsPage({ searchParams }: Props) {
         <button className="rounded border border-zinc-600 px-4 py-2 text-sm text-white hover:bg-zinc-900">Search</button>
       </form>
 
-      <div className="mt-6 overflow-hidden rounded-xl border border-zinc-800">
-        <table className="w-full text-sm">
-          <thead className="bg-zinc-950 text-zinc-300">
-            <tr>
-              <th className="px-4 py-3 text-left">Symbol</th>
-              <th className="px-4 py-3 text-left">Company</th>
-              <th className="px-4 py-3 text-left">Date</th>
-              <th className="px-4 py-3 text-right">Final Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={`${row.symbol}-${row.score_date}`} className="border-t border-zinc-800 transition hover:bg-zinc-900/50">
-                <td className="p-0"><Link className="block px-4 py-3 text-white" href={`/stocks/${row.symbol}`}>{row.symbol}</Link></td>
-                <td className="p-0"><Link className="block px-4 py-3 text-zinc-400" href={`/stocks/${row.symbol}`}>{row.name ?? '-'}</Link></td>
-                <td className="p-0"><Link className="block px-4 py-3 text-zinc-400" href={`/stocks/${row.symbol}`}>{row.score_date}</Link></td>
-                <td className="p-0 text-right"><Link className="block px-4 py-3 font-medium" href={`/stocks/${row.symbol}`}>{row.final_score.toFixed(2)}</Link></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mt-8 grid gap-4">
+        {rows.map((row) => (
+          <Link
+            key={`${row.symbol}-${row.score_date}`}
+            href={`/stocks/${row.symbol}`}
+            className="block rounded-xl border border-zinc-800 bg-zinc-950 p-5 transition hover:border-zinc-600"
+          >
+            <article>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xl font-semibold text-white">{row.symbol}</p>
+                  <p className="mt-1 text-sm text-zinc-400">{row.name ?? '-'}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Final Score</p>
+                  <p className="mt-1 text-xl font-semibold text-white">{row.final_score.toFixed(2)}</p>
+                </div>
+              </div>
+              <p className="mt-3 text-sm text-zinc-400">Score Date: {row.score_date}</p>
+            </article>
+          </Link>
+        ))}
       </div>
       <div className="mt-8 flex items-center justify-between text-sm text-zinc-300">
         <Link

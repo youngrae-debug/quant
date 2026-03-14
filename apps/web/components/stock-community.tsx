@@ -26,7 +26,7 @@ export function StockCommunity({ symbol }: Props) {
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     if (!nickname.trim() || !content.trim()) {
-      setMessage('닉네임과 내용을 입력해주세요.');
+      setMessage('Please enter both nickname and message.');
       return;
     }
 
@@ -36,33 +36,33 @@ export function StockCommunity({ symbol }: Props) {
     setLoading(false);
 
     if (!created) {
-      setMessage('등록에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      setMessage('Failed to post comment. Please try again.');
       return;
     }
 
     setNickname('');
     setContent('');
     setItems((prev) => [created, ...prev]);
-    setMessage('의견이 등록되었습니다.');
+    setMessage('Comment posted successfully.');
   }
 
   return (
     <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950 p-6">
       <h2 className="text-xl font-semibold">Community Notes</h2>
-      <p className="mt-2 text-sm text-zinc-400">해당 기업에 대한 의견을 남기고 다른 사용자 인사이트를 확인하세요.</p>
+      <p className="mt-2 text-sm text-zinc-400">Share your view on this company and read insights from other users.</p>
 
       <form className="mt-4 space-y-3" onSubmit={onSubmit}>
         <input
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
-          placeholder="닉네임"
+          placeholder="Nickname"
           maxLength={40}
           className="w-full rounded border border-zinc-700 bg-black px-3 py-2 text-sm text-white placeholder:text-zinc-500"
         />
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="의견을 작성해 주세요"
+          placeholder="Write your comment"
           rows={4}
           maxLength={2000}
           className="w-full rounded border border-zinc-700 bg-black px-3 py-2 text-sm text-white placeholder:text-zinc-500"
@@ -74,7 +74,7 @@ export function StockCommunity({ symbol }: Props) {
             disabled={loading}
             className="rounded border border-zinc-600 px-4 py-2 text-sm text-white transition hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? '등록 중...' : '의견 등록'}
+            {loading ? 'Posting...' : 'Post Comment'}
           </button>
         </div>
         {message ? <p className="text-sm text-zinc-400">{message}</p> : null}
@@ -82,7 +82,7 @@ export function StockCommunity({ symbol }: Props) {
 
       <div className="mt-6 space-y-3">
         {items.length === 0 ? (
-          <p className="text-sm text-zinc-400">아직 등록된 의견이 없습니다.</p>
+          <p className="text-sm text-zinc-400">No comments yet.</p>
         ) : (
           items.map((item) => (
             <article key={item.id} className="rounded-lg border border-zinc-800 bg-black p-3">
