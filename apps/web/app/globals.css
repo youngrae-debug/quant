@@ -3,107 +3,69 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
 }
 
-body {
+body,
+:root[data-theme='dark'] body {
   background:
-    radial-gradient(1200px 600px at -10% -10%, rgba(236, 72, 153, 0.14), transparent 45%),
-    radial-gradient(1000px 500px at 110% 0%, rgba(244, 114, 182, 0.12), transparent 40%),
-    #f4f6fb;
+    radial-gradient(1200px 600px at -10% -10%, rgba(255, 255, 255, 0.08), transparent 45%),
+    radial-gradient(1000px 500px at 110% 0%, rgba(255, 255, 255, 0.05), transparent 40%),
+    #050505;
+  color: #ffffff;
 }
 
 :root[data-theme='light'] body {
   background:
-    radial-gradient(1200px 600px at -10% -10%, rgba(236, 72, 153, 0.14), transparent 45%),
-    radial-gradient(1000px 500px at 110% 0%, rgba(244, 114, 182, 0.12), transparent 40%),
-    #f4f6fb;
+    radial-gradient(1200px 600px at -10% -10%, rgba(0, 0, 0, 0.05), transparent 45%),
+    radial-gradient(1000px 500px at 110% 0%, rgba(0, 0, 0, 0.04), transparent 40%),
+    #f5f5f5;
+  color: #09090b;
 }
 
-:root[data-theme='dark'] body {
-  background: #111827;
+:root[data-theme='light'] .bg-black {
+  background-color: #ffffff !important;
 }
 
-:root[data-theme='light'] .bg-slate-950,
-:root[data-theme='light'] .bg-slate-950\/90 {
-  background-color: #f7f8fc !important;
-  box-shadow: 8px 8px 18px rgba(148, 163, 184, 0.18), -8px -8px 18px rgba(255, 255, 255, 0.95);
+:root[data-theme='light'] .bg-zinc-950,
+:root[data-theme='light'] .bg-zinc-950\/80 {
+  background-color: #ffffff !important;
 }
 
-:root[data-theme='light'] .bg-slate-900,
-:root[data-theme='light'] .bg-slate-900\/60,
-:root[data-theme='light'] .bg-slate-900\/40,
-:root[data-theme='light'] .bg-slate-950\/50 {
-  background-color: #f8f9fd !important;
-  box-shadow: 7px 7px 16px rgba(148, 163, 184, 0.16), -7px -7px 16px rgba(255, 255, 255, 0.92);
+:root[data-theme='light'] .border-zinc-700,
+:root[data-theme='light'] .border-zinc-800,
+:root[data-theme='light'] .border-zinc-600 {
+  border-color: #d4d4d8 !important;
 }
 
-:root[data-theme='light'] .from-slate-900,
-:root[data-theme='light'] .to-slate-950 {
-  --tw-gradient-from: #ffffff var(--tw-gradient-from-position) !important;
-  --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position) !important;
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+:root[data-theme='light'] .text-white,
+:root[data-theme='light'] .text-zinc-100 {
+  color: #09090b !important;
 }
 
-:root[data-theme='light'] .border-slate-800,
-:root[data-theme='light'] .border-slate-800\/80,
-:root[data-theme='light'] .border-slate-700 {
-  border-color: #e2e8f0 !important;
+:root[data-theme='light'] .text-zinc-300,
+:root[data-theme='light'] .text-zinc-400,
+:root[data-theme='light'] .text-zinc-500 {
+  color: #3f3f46 !important;
 }
 
-:root[data-theme='light'] .text-slate-100,
-:root[data-theme='light'] .text-slate-200,
-:root[data-theme='light'] .text-slate-300 {
-  color: #0f172a !important;
-}
-
-:root[data-theme='light'] .text-slate-400 {
-  color: #64748b !important;
-}
-
-:root[data-theme='light'] .text-slate-600 {
-  color: #94a3b8 !important;
-}
-
-:root[data-theme='light'] .text-white {
-  color: #0f172a !important;
-}
-
-:root[data-theme='light'] .placeholder\:text-slate-500::placeholder {
-  color: #64748b !important;
-}
-
-:root[data-theme='light'] input {
-  color: #0f172a !important;
-}
-
-:root[data-theme='light'] .text-emerald-300,
-:root[data-theme='light'] .text-emerald-400 {
-  color: #db2777 !important;
-}
-
-:root[data-theme='light'] .border-emerald-400,
-:root[data-theme='light'] .border-emerald-500\/30 {
-  border-color: #f472b6 !important;
-}
-
-:root[data-theme='light'] .bg-emerald-400 {
-  background-color: #ec4899 !important;
+:root[data-theme='light'] .bg-white {
+  background-color: #111111 !important;
   color: #ffffff !important;
-  box-shadow: 6px 6px 12px rgba(236, 72, 153, 0.2), -4px -4px 10px rgba(255, 255, 255, 0.8);
 }
 
-:root[data-theme='light'] .hover\:bg-emerald-400\/10:hover {
-  background-color: rgba(236, 72, 153, 0.12) !important;
+:root[data-theme='light'] .hover\:bg-zinc-900:hover {
+  background-color: #e4e4e7 !important;
 }
 
-:root[data-theme='light'] .rounded,
-:root[data-theme='light'] .rounded-lg,
-:root[data-theme='light'] .rounded-xl,
-:root[data-theme='light'] .rounded-2xl {
-  border-radius: 1rem !important;
+:root[data-theme='light'] .hover\:bg-zinc-200:hover {
+  background-color: #d4d4d8 !important;
 }
