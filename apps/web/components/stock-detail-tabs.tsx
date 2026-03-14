@@ -24,10 +24,10 @@ type Props = {
   symbol: string;
 };
 
-const tabs = ['기본 정보', 'DCF', '버핏식 기업분석', '커뮤니티'] as const;
+const tabs = ['Overview', 'DCF', 'Buffett Analysis', 'Community'] as const;
 
 export function StockDetailTabs({ stock, history, dcfScenarios, momentumBadge, closeDelta, weekDelta, symbol }: Props) {
-  const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>('기본 정보');
+  const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>('Overview');
   const checklist = stock?.buffett_checklist;
 
   const checks = useMemo(() => {
@@ -70,7 +70,7 @@ export function StockDetailTabs({ stock, history, dcfScenarios, momentumBadge, c
         ))}
       </div>
 
-      {activeTab === '기본 정보' ? (
+      {activeTab === 'Overview' ? (
         <div className="mt-4 space-y-6">
           <section>
             <h2 className="text-xl font-semibold">Institutional Ownership Signals</h2>
@@ -167,18 +167,18 @@ export function StockDetailTabs({ stock, history, dcfScenarios, momentumBadge, c
         </section>
       ) : null}
 
-      {activeTab === '버핏식 기업분석' ? (
+      {activeTab === 'Buffett Analysis' ? (
         <section className="mt-4">
           <h2 className="text-xl font-semibold">Buffett-style Company Checklist</h2>
-          <p className="mt-2 text-sm text-zinc-400">체크리스트를 실제 기업 데이터로 평가합니다.</p>
+          <p className="mt-2 text-sm text-zinc-400">Evaluate the checklist using actual company data.</p>
           <ul className="mt-4 space-y-2 text-sm text-zinc-300">
-            <li>{checks.hasFinancials ? '✅' : '❌'} 5~10년 재무제표(수익, EBIT, FCF, ROIC): {checks.hasFinancials ? '충족' : '미충족'}</li>
-            <li>{checks.hasDebtQuality ? '✅' : '❌'} 부채 품질(순채무, 이자 보장, 만기): {checks.hasDebtQuality ? '충족' : '미충족'}</li>
-            <li>{checks.hasCapitalAllocation ? '✅' : '❌'} 관리 자본 배분 이력: {checks.hasCapitalAllocation ? '충족' : '미충족'}</li>
+            <li>{checks.hasFinancials ? '✅' : '❌'} 5-10Y financial statements (Revenue, EBIT, FCF, ROIC): {checks.hasFinancials ? 'Pass' : 'Fail'}</li>
+            <li>{checks.hasDebtQuality ? '✅' : '❌'} Debt quality (Net debt, Interest coverage, Maturity): {checks.hasDebtQuality ? 'Pass' : 'Fail'}</li>
+            <li>{checks.hasCapitalAllocation ? '✅' : '❌'} Management capital allocation track record: {checks.hasCapitalAllocation ? 'Pass' : 'Fail'}</li>
           </ul>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 text-sm">
-            <div className="rounded-lg border border-zinc-800 bg-black p-3">재무 연도 수: <span className="font-medium text-white">{checklist?.financial_years_available ?? 0}년</span></div>
+            <div className="rounded-lg border border-zinc-800 bg-black p-3">Financial years available: <span className="font-medium text-white">{checklist?.financial_years_available ?? 0} years</span></div>
             <div className="rounded-lg border border-zinc-800 bg-black p-3">Revenue TTM: <span className="font-medium text-white">{checklist?.revenue_ttm ?? 'N/A'}</span></div>
             <div className="rounded-lg border border-zinc-800 bg-black p-3">EBIT TTM: <span className="font-medium text-white">{checklist?.ebit_ttm ?? 'N/A'}</span></div>
             <div className="rounded-lg border border-zinc-800 bg-black p-3">FCF TTM: <span className="font-medium text-white">{checklist?.free_cash_flow_ttm ?? 'N/A'}</span></div>
@@ -191,7 +191,7 @@ export function StockDetailTabs({ stock, history, dcfScenarios, momentumBadge, c
         </section>
       ) : null}
 
-      {activeTab === '커뮤니티' ? (
+      {activeTab === 'Community' ? (
         <section className="mt-4">
           <StockCommunity symbol={symbol.toUpperCase()} />
         </section>

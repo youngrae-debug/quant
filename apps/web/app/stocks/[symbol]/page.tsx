@@ -127,21 +127,6 @@ export default async function StockDetailPage({ params }: Props) {
       <h1 className="text-3xl font-semibold">{stock?.symbol}</h1>
       <p className="mt-1 text-zinc-400">{stock?.name} · {stock?.exchange} · {stock?.sector}</p>
 
-      <section className="mt-8 grid gap-4 md:grid-cols-3">
-        <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-          <p className="text-xs text-zinc-400">Latest Close</p>
-          <p className="mt-2 text-2xl font-semibold">{stock?.latest_close?.toFixed(2) ?? 'N/A'}</p>
-        </div>
-        <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-          <p className="text-xs text-zinc-400">Industry</p>
-          <p className="mt-2 text-lg font-medium">{stock?.industry ?? 'N/A'}</p>
-        </div>
-        <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-          <p className="text-xs text-zinc-400">Latest Recommendation</p>
-          <p className="mt-2 text-lg font-medium">{stock?.latest_recommendation?.action ?? 'N/A'}</p>
-        </div>
-      </section>
-
       <StockPriceChart history={history} />
 
       <section className="mt-10 rounded-xl border border-zinc-800 bg-zinc-950 p-6">
@@ -150,6 +135,18 @@ export default async function StockDetailPage({ params }: Props) {
           Company-level snapshot from the latest available market and profile data.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-lg border border-zinc-800 bg-black p-3">
+            <p className="text-xs text-zinc-400">Latest Close</p>
+            <p className="mt-1 font-medium">{stock?.latest_close?.toFixed(2) ?? 'N/A'}</p>
+          </div>
+          <div className="rounded-lg border border-zinc-800 bg-black p-3">
+            <p className="text-xs text-zinc-400">Industry</p>
+            <p className="mt-1 font-medium">{stock?.industry ?? 'N/A'}</p>
+          </div>
+          <div className="rounded-lg border border-zinc-800 bg-black p-3">
+            <p className="text-xs text-zinc-400">Latest Recommendation</p>
+            <p className="mt-1 font-medium">{stock?.latest_recommendation?.action ?? 'N/A'}</p>
+          </div>
           <div className="rounded-lg border border-zinc-800 bg-black p-3">
             <p className="text-xs text-zinc-400">Ticker</p>
             <p className="mt-1 font-medium">{stock?.symbol ?? 'N/A'}</p>
