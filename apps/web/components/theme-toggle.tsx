@@ -10,7 +10,7 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
     const saved = window.localStorage.getItem('theme');
@@ -20,9 +20,8 @@ export function ThemeToggle() {
       return;
     }
 
-    const systemTheme: Theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-    setTheme(systemTheme);
-    applyTheme(systemTheme);
+    setTheme('dark');
+    applyTheme('dark');
   }, []);
 
   const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
@@ -35,7 +34,7 @@ export function ThemeToggle() {
         applyTheme(nextTheme);
         window.localStorage.setItem('theme', nextTheme);
       }}
-      className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 shadow-[4px_4px_10px_rgba(148,163,184,0.16),-4px_-4px_10px_rgba(255,255,255,0.9)] transition hover:border-emerald-400 hover:text-emerald-300"
+      className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-300 transition hover:border-white hover:text-white"
       aria-label={`Switch to ${nextTheme} theme`}
       title={`Switch to ${nextTheme} theme`}
     >

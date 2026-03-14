@@ -21,7 +21,7 @@ export default async function TopPicksPage({ searchParams }: Props) {
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
       <h1 className="text-3xl font-semibold">Top Picks</h1>
-      <p className="mt-2 text-slate-400">Latest high-conviction signals from our model. Total: {total.toLocaleString()}</p>
+      <p className="mt-2 text-zinc-400">Latest high-conviction signals from our model. Total: {total.toLocaleString()}</p>
 
       <form className="mt-6 flex gap-3" action="/top-picks" method="get">
         <input type="hidden" name="size" value={size} />
@@ -29,27 +29,27 @@ export default async function TopPicksPage({ searchParams }: Props) {
           name="q"
           defaultValue={q}
           placeholder="Search by ticker or company"
-          className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500"
+          className="w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white placeholder:text-zinc-500"
         />
-        <button className="rounded border border-emerald-400 px-4 py-2 text-sm text-emerald-300 hover:bg-emerald-400/10">Search</button>
+        <button className="rounded border border-zinc-600 px-4 py-2 text-sm text-white hover:bg-zinc-900">Search</button>
       </form>
 
       <div className="mt-8 grid gap-4">
         {picks.map((pick) => (
-          <article key={`${pick.symbol}-${pick.recommendation_date}`} className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <article key={`${pick.symbol}-${pick.recommendation_date}`} className="rounded-xl border border-zinc-800 bg-zinc-950 p-5">
             <div className="flex items-center justify-between">
-              <Link href={`/stocks/${pick.symbol}`} className="text-xl font-semibold text-emerald-300">{pick.symbol}</Link>
-              <span className="rounded-full border border-emerald-500/30 px-3 py-1 text-xs uppercase text-emerald-300">{pick.action}</span>
+              <Link href={`/stocks/${pick.symbol}`} className="text-xl font-semibold text-white">{pick.symbol}</Link>
+              <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs uppercase text-white">{pick.action}</span>
             </div>
-            {pick.name ? <p className="mt-1 text-sm text-slate-400">{pick.name}</p> : null}
-            <p className="mt-3 text-slate-300">{pick.rationale ?? 'No rationale provided.'}</p>
+            {pick.name ? <p className="mt-1 text-sm text-zinc-400">{pick.name}</p> : null}
+            <p className="mt-3 text-zinc-300">{pick.rationale ?? 'No rationale provided.'}</p>
           </article>
         ))}
       </div>
-      <div className="mt-8 flex items-center justify-between text-sm text-slate-300">
+      <div className="mt-8 flex items-center justify-between text-sm text-zinc-300">
         <Link
           href={`/top-picks?page=${prevPage}&size=${size}${qs}`}
-          className={`rounded border px-3 py-2 ${page <= 1 ? 'pointer-events-none border-slate-800 text-slate-600' : 'border-slate-700 hover:border-emerald-400'}`}
+          className={`rounded border px-3 py-2 ${page <= 1 ? 'pointer-events-none border-zinc-800 text-zinc-500' : 'border-zinc-700 hover:border-zinc-600'}`}
         >
           Previous
         </Link>
@@ -58,7 +58,7 @@ export default async function TopPicksPage({ searchParams }: Props) {
         </p>
         <Link
           href={`/top-picks?page=${nextPage}&size=${size}${qs}`}
-          className={`rounded border px-3 py-2 ${page >= totalPages ? 'pointer-events-none border-slate-800 text-slate-600' : 'border-slate-700 hover:border-emerald-400'}`}
+          className={`rounded border px-3 py-2 ${page >= totalPages ? 'pointer-events-none border-zinc-800 text-zinc-500' : 'border-zinc-700 hover:border-zinc-600'}`}
         >
           Next
         </Link>
